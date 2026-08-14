@@ -1,4 +1,10 @@
-import { createFileRoute } from "@tanstack/react-router";
-import { HomePage } from "../../app/modules/home-page";
+import { createFileRoute, redirect } from "@tanstack/react-router";
 
-export const Route = createFileRoute("/")({ component: HomePage });
+export const Route = createFileRoute("/")({
+  beforeLoad: ({ location }) => {
+    throw redirect({
+      to: "/dashboard",
+      search: location.search,
+    });
+  },
+});

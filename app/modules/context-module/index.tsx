@@ -1,3 +1,4 @@
+import { getPageContentOptions } from "#/common/api/content-api";
 import { ConfirmModal } from "#/components/confirm-modal";
 import { useHeaderActions } from "#/contexts/header-actions";
 import { ChevronDown, FileEdit, X } from "@operon/icons";
@@ -7,8 +8,14 @@ import {
   useQueryClient,
   useSuspenseQuery,
 } from "@tanstack/react-query";
-import { useState, useEffect } from "react";
-import { createContextOptions, deleteContextOptions, getContextsOptions, updateContextOptions, type ContextVariable } from "./api";
+import { useEffect, useState } from "react";
+import {
+  createContextOptions,
+  deleteContextOptions,
+  getContextsOptions,
+  updateContextOptions,
+  type ContextVariable,
+} from "./api";
 import * as classes from "./style";
 
 const ContextModal = ({
@@ -16,11 +23,15 @@ const ContextModal = ({
   onClose,
   onSubmit,
   initialData,
+  modals,
+  typeOptions,
 }: {
   isOpen: boolean;
   onClose: () => void;
   onSubmit: (name: string, type: string) => void;
   initialData?: ContextVariable | null;
+  modals: any;
+  typeOptions: any[];
 }) => {
   const [name, setName] = useState("");
   const [type, setType] = useState("string");
@@ -45,18 +56,23 @@ const ContextModal = ({
     onClose();
   };
 
+  const modalConfig = initialData ? modals?.edit : modals?.create;
+
   return (
     <Modal
       isOpen={isOpen}
       onClose={onClose}
-      title={initialData ? "Edit Context Variable" : "Create Context Variable"}
+      title={
+        modalConfig?.title ??
+        (initialData ? "Edit Context Variable" : "Create Context Variable")
+      }
       footer={
         <Box display="flex" justify="flex-end" gap={12}>
           <Button variant="outline" onClick={onClose}>
-            Cancel
+            {modalConfig?.cancelLabel ?? "Cancel"}
           </Button>
           <Button variant="primary" onClick={handleSubmit}>
-            {initialData ? "Save" : "Create"}
+            {modalConfig?.submitLabel ?? (initialData ? "Save" : "Create")}
           </Button>
         </Box>
       }
@@ -72,10 +88,12 @@ const ContextModal = ({
               color: "var(--operon-color-text)",
             }}
           >
-            Name
+            {modals?.create?.fields?.[0]?.label ?? "Name"}
           </label>
           <Input
-            placeholder="e.g. x-page-name"
+            placeholder={
+              modals?.create?.fields?.[0]?.placeholder ?? "e.g. x-page-name"
+            }
             value={name}
             onChange={(e) => setName(e.target.value)}
             onKeyDown={(e) => {
@@ -94,7 +112,7 @@ const ContextModal = ({
               color: "var(--operon-color-text)",
             }}
           >
-            Type
+            {modals?.create?.fields?.[1]?.label ?? "Type"}
           </label>
           <Dropdown
             containerStyle={{ width: "100%" }}
@@ -105,17 +123,13 @@ const ContextModal = ({
                 style={{ width: "100%", justifyContent: "space-between" }}
               >
                 <Box display="flex" align="center">
-                  {type.charAt(0).toUpperCase() + type.slice(1)}
+                  {typeOptions.find((o) => o.value === type)?.label ??
+                    type.charAt(0).toUpperCase() + type.slice(1)}
                 </Box>
                 <ChevronDown size={16} />
               </Button>
             }
-            items={[
-              { value: "string", label: "String" },
-              { value: "number", label: "Number" },
-              { value: "boolean", label: "Boolean" },
-              { value: "array", label: "Array" },
-            ]}
+            items={typeOptions}
           />
         </Box>
       </Box>
@@ -126,6 +140,14 @@ const ContextModal = ({
 export const ContextPage = () => {
   const queryClient = useQueryClient();
   const { data: variables = [] } = useSuspenseQuery(getContextsOptions);
+  const { data: pageData } = useSuspenseQuery(getPageContentOptions("context"));
+  const typeOptions = (pageData.content.typeOptions as any[]) ?? [
+    { value: "string", label: "String" },
+    { value: "number", label: "Number" },
+    { value: "boolean", label: "Boolean" },
+    { value: "array", label: "Array" },
+  ];
+  const modals = pageData.modals;
 
   const [isPromptOpen, setIsPromptOpen] = useState(false);
   const [editData, setEditData] = useState<ContextVariable | null>(null);
@@ -154,7 +176,7 @@ export const ContextPage = () => {
   });
 
   useHeaderActions({
-    "add-context-button": () => {
+    create_context: () => {
       setEditData(null);
       setIsPromptOpen(true);
     },
@@ -216,16 +238,21 @@ export const ContextPage = () => {
         }}
         onSubmit={handleSubmit}
         initialData={editData}
+        modals={modals}
+        typeOptions={typeOptions}
       />
 
       <ConfirmModal
         isOpen={!!deleteId}
         onClose={() => setDeleteId(null)}
         onConfirm={() => deleteId && deleteMutation.mutate(deleteId)}
-        title="Delete Context Variable"
-        message="Are you sure you want to delete this context variable? This action cannot be undone."
-        confirmText="Delete"
-        isDestructive
+        title={modals?.delete?.title ?? "Delete Context Variable"}
+        message={
+          modals?.delete?.message ??
+          "Are you sure you want to delete this context variable? This action cannot be undone."
+        }
+        confirmText={modals?.delete?.confirmLabel ?? "Delete"}
+        isDestructive={modals?.delete?.isDestructive ?? true}
       />
     </Box>
   );

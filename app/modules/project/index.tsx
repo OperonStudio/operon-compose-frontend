@@ -1,3 +1,4 @@
+import { getPageContentOptions } from "#/common/api/content-api";
 import { ConfirmModal } from "#/components/confirm-modal";
 import { useHeaderActions } from "#/contexts/header-actions";
 import { Box, Button } from "@operon/ui";
@@ -39,6 +40,12 @@ export const ProjectPage = () => {
 
   const queryClient = useQueryClient();
   const { data: projects } = useSuspenseQuery(getProjectsOptions);
+  const { data: pageData } = useSuspenseQuery(
+    getPageContentOptions("projects"),
+  );
+
+  const emptyState = pageData.content.emptyState;
+  const modals = pageData.modals;
 
   const createProject = useMutation({
     ...createProjectOptions,
@@ -62,7 +69,7 @@ export const ProjectPage = () => {
   });
 
   useHeaderActions({
-    create: () => {
+    create_project: () => {
       setIsModalOpen(true);
     },
   });
@@ -120,14 +127,14 @@ export const ProjectPage = () => {
       <Box {...classes.projectGridStyle}>
         {projects.length === 0 ? (
           <Box {...classes.emptyStateStyle}>
-            <Box {...classes.noProjectFoundStyle}>No projects found</Box>
-            <Box>Click "Create Project" to get started.</Box>
+            <Box {...classes.noProjectFoundStyle}>{emptyState?.title}</Box>
+            <Box>{emptyState?.description}</Box>
             <Button
               variant="outline"
               size="sm"
               onClick={() => setIsModalOpen(true)}
             >
-              Create Project
+              {emptyState?.actionLabel}
             </Button>
           </Box>
         ) : (
@@ -138,7 +145,7 @@ export const ProjectPage = () => {
               title={project.name}
               description={project.description}
               apiCount={0}
-              environments={["development", "production"]}
+              environments={project.environments || []}
               onEdit={handleEditClick}
               onDelete={handleDeleteClick}
             />
@@ -161,10 +168,16 @@ export const ProjectPage = () => {
         isOpen={!!projectToDelete}
         onClose={() => setProjectToDelete(null)}
         onConfirm={confirmDelete}
-        title="Delete Project"
-        message={`Are you sure you want to delete the project "${projectToDelete?.name}"?`}
-        confirmText="Delete"
-        isDestructive={true}
+        title={modals?.delete?.title ?? "Delete Project"}
+        message={
+          modals?.delete?.message?.replace(
+            "{{name}}",
+            projectToDelete?.name || "",
+          ) ??
+          `Are you sure you want to delete the project "${projectToDelete?.name}"?`
+        }
+        confirmText={modals?.delete?.confirmLabel ?? "Delete"}
+        isDestructive={modals?.delete?.isDestructive ?? true}
       />
     </>
   );

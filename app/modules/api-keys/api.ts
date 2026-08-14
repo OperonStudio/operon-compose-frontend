@@ -1,5 +1,6 @@
-import { DashboardEndpoints, getEndpoint } from "#/common/endpoints";
+import { Endpoints } from "#/common/api/endpoints";
 import { operonApiClient } from "#/libs/apiClient";
+import { getActiveIds } from "#/libs/utils";
 import { mutationOptions, queryOptions } from "@tanstack/react-query";
 
 export interface ApiKey {
@@ -17,16 +18,21 @@ export interface ProjectWithKeys {
 }
 
 export interface RegenerateAPIKeyReq {
-  environment: string;
+  environmentId: string;
 }
 
-const API_KEYS_ENDPOINT = getEndpoint(DashboardEndpoints.API_KEYS);
-
-export const getApiKeysOptions = queryOptions({
-  queryKey: ["api-keys"],
-  queryFn: async () =>
-    await operonApiClient.get<ProjectWithKeys[]>(API_KEYS_ENDPOINT),
-});
+export const getApiKeysOptions = () => {
+  const { workspaceId, environmentId } = getActiveIds();
+  return queryOptions({
+    queryKey: ["api-keys", workspaceId, environmentId],
+    queryFn: async () => {
+      if (!workspaceId || !environmentId) return [];
+      return await operonApiClient.get<ProjectWithKeys[]>(
+        `${Endpoints.composeEndpoints.API_KEYS(workspaceId)}?environment=${environmentId}`,
+      );
+    },
+  });
+};
 
 export const regenerateApiKeyOptions = mutationOptions({
   mutationFn: async ({
@@ -35,9 +41,12 @@ export const regenerateApiKeyOptions = mutationOptions({
   }: {
     projectId: string;
     req: RegenerateAPIKeyReq;
-  }) =>
-    await operonApiClient.post<ApiKey>(
-      `${API_KEYS_ENDPOINT}/${projectId}`,
+  }) => {
+    const { workspaceId } = getActiveIds();
+    if (!workspaceId) throw new Error("No active workspace");
+    return await operonApiClient.post<ApiKey>(
+      Endpoints.composeEndpoints.API_KEYS(workspaceId, projectId),
       req,
-    ),
+    );
+  },
 });

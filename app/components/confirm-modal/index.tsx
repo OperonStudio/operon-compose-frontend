@@ -31,6 +31,7 @@ export const ConfirmModal = ({
       isOpen={isOpen}
       onClose={onClose}
       title={title}
+      size="sm"
       footer={
         <Box display="flex" justify="flex-end" gap={12}>
           <Button variant="outline" onClick={onClose}>
@@ -42,8 +43,8 @@ export const ConfirmModal = ({
             style={
               isDestructive
                 ? {
-                    backgroundColor: "var(--operon-color-error, #dc2626)",
-                    borderColor: "var(--operon-color-error, #dc2626)",
+                    backgroundColor: "var(--operon-color-danger, #ef4444)",
+                    borderColor: "transparent",
                   }
                 : {}
             }
@@ -57,8 +58,9 @@ export const ConfirmModal = ({
         <p
           style={{
             margin: 0,
-            color: "var(--operon-color-text)",
-            fontSize: "14px",
+            color: "var(--operon-color-text, #1a1a2e)",
+            fontSize: "15px",
+            lineHeight: 1.6,
           }}
         >
           {message}

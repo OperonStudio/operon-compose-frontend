@@ -26,7 +26,7 @@ export const ProjectCard = ({
   const isPhone = usePhone();
 
   return (
-    <Card variant="outline" shadow="sm">
+    <Card shadow="sm">
       <Box
         display="flex"
         direction="row"

@@ -1,9 +1,12 @@
 import { PromptModal } from "#/components/prompt-modal";
 import { useHeaderActions } from "#/contexts/header-actions";
-import { ChevronDown, Copy } from "@operon/icons";
+import { getApiKeysOptions } from "#/modules/api-keys/api";
+import { useActiveEnvironment } from "#/modules/environments/hooks";
+import { Copy } from "@operon/icons";
 import { Box, Button, Dropdown, Sidebar, Textarea, toast } from "@operon/ui";
 import {
   useMutation,
+  useQuery,
   useQueryClient,
   useSuspenseQuery,
 } from "@tanstack/react-query";
@@ -20,6 +23,12 @@ import * as classes from "./style";
 export const ProjectIdPage = () => {
   const { projectId } = useParams({ from: "/projects/$projectId/" });
   const queryClient = useQueryClient();
+  const { environments } = useActiveEnvironment();
+
+  // Fetch API keys to include in the copied delivery URL
+  const { data: projectsWithKeys = [] } = useQuery(getApiKeysOptions());
+  const apiKeysForThisProject =
+    projectsWithKeys.find((p) => p.id === projectId)?.keys ?? [];
 
   const { data: collections = [] } = useSuspenseQuery(
     getCollectionsOptions(projectId),
@@ -42,7 +51,7 @@ export const ProjectIdPage = () => {
   });
 
   const updateCollection = useMutation({
-    ...updateCollectionOptions(projectId, activeCollection?._id || ""),
+    ...updateCollectionOptions(projectId, activeCollection?.id || ""),
     onSuccess: () => {
       queryClient.invalidateQueries({
         queryKey: ["projects", projectId, "collections"],
@@ -59,12 +68,12 @@ export const ProjectIdPage = () => {
 
   const handleCreateCollection = (name: string) => {
     const id = name.toLowerCase().replace(/[^a-z0-9]+/g, "-");
-    (createCollection.mutate as any)({ id, name, meta_data: {} });
+    (createCollection.mutate as any)({ id, name, data: {} });
   };
 
   useEffect(() => {
-    if (activeCollection && activeCollection.meta_data) {
-      setSchemaText(JSON.stringify(activeCollection.meta_data, null, 2));
+    if (activeCollection && activeCollection.data) {
+      setSchemaText(JSON.stringify(activeCollection.data, null, 2));
     } else {
       setSchemaText("{}");
     }
@@ -80,11 +89,24 @@ export const ProjectIdPage = () => {
     }
   };
 
-  const handleCopyApiUrl = (env: string) => {
+  const handleCopyApiUrl = (environmentId: string) => {
     if (!activeCollection) return;
-    const url = `http://localhost:8080/api/content/${projectId}/${activeCollection._id}?env=${env}`; //have to change this
+
+    // Find the API key value for this environment
+    const apiKey = apiKeysForThisProject.find(
+      (k) => k.environment === environmentId || (k as any).environmentId === environmentId,
+    );
+    const baseUrl = import.meta.env.VITE_OPERON_COMPOSE_BACKEND_URL;
+    let url = `${baseUrl}/api/content/${projectId}/${activeCollection.id}?environmentId=${environmentId}`;
+    if (apiKey) {
+      url += `&x-Operon-key=${apiKey.value}`;
+    }
     navigator.clipboard.writeText(url);
-    toast.success(`Copied ${env} API endpoint!`);
+    toast.success(
+      apiKey
+        ? "Copied API URL with key!"
+        : "Copied URL (no API key found for this env)",
+    );
   };
 
   return (
@@ -108,18 +130,18 @@ export const ProjectIdPage = () => {
         <Box {...classes.collectionListStyle}>
           {collections.map((col) => (
             <Box
-              key={col._id}
+              key={col.id}
               {...classes.collectionItemStyle}
               style={{
                 backgroundColor:
-                  activeCollection?._id === col._id
+                  activeCollection?.id === col.id
                     ? "var(--operon-color-surface-raised, #f0f0f0)"
                     : undefined,
                 color:
-                  activeCollection?._id === col._id
+                  activeCollection?.id === col.id
                     ? "var(--operon-color-primary)"
                     : undefined,
-                fontWeight: activeCollection?._id === col._id ? "500" : "normal",
+                fontWeight: activeCollection?.id === col.id ? "500" : "normal",
               }}
               onClick={() => setActiveCollection(col)}
             >
@@ -146,18 +168,13 @@ export const ProjectIdPage = () => {
                   placement="bottom-end"
                   trigger={
                     <Button variant="outline">
-                      <Box display="flex" align="center" gap={8}>
-                        <Copy size={16} />
-                        Copy API URL
-                        <ChevronDown size={16} />
-                      </Box>
+                      <Copy size={16} />
                     </Button>
                   }
-                  items={[
-                    { value: "development", label: "Development" },
-                    { value: "staging", label: "Staging" },
-                    { value: "production", label: "Production" },
-                  ]}
+                  items={environments.map((env) => ({
+                    value: env.id,
+                    label: env.name,
+                  }))}
                 />
                 <Button
                   onClick={handleSave}
@@ -169,9 +186,9 @@ export const ProjectIdPage = () => {
             </Box>
             <Box style={{ flex: 1, display: "flex", flexDirection: "column" }}>
               <Textarea
-                placeholder="Enter raw JSON schema, notes, or configuration details here..."
+                fullHeight
+                placeholder='Paste your JSON content here e.g. {"title": "Hello", "visible": true}'
                 style={{
-                  flex: 1,
                   resize: "none",
                   minHeight: "300px",
                   fontFamily: "monospace",

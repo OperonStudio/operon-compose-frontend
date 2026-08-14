@@ -1,55 +1,87 @@
-import { DashboardEndpoints, getEndpoint } from "#/common/endpoints";
+import { Endpoints } from "#/common/api/endpoints";
 import { operonApiClient } from "#/libs/apiClient";
+import { getActiveIds } from "#/libs/utils";
 import { queryOptions } from "@tanstack/react-query";
 
 export interface Collection {
-  _id?: string;
-  project_id: string;
+  id?: string;
+  projectId: string;
   name: string;
-  meta_data: any;
+  data: any;
 }
 
 export interface CreateCollectionDTO {
   id: string;
   name: string;
-  meta_data: any;
+  data: any;
 }
 
 export const getCollectionsOptions = (projectId: string) =>
   queryOptions({
     queryKey: ["projects", projectId, "collections"],
-    queryFn: async () =>
-      await operonApiClient.get<Collection[]>(
-        getEndpoint(DashboardEndpoints.PROJECTS) + `/${projectId}/collections`,
-      ),
+    queryFn: async () => {
+      const { workspaceId, environmentId } = getActiveIds();
+      if (!workspaceId || !environmentId) return [];
+      return await operonApiClient.get<Collection[]>(
+        Endpoints.composeEndpoints.PROJECT_COLLECTIONS(
+          workspaceId,
+          environmentId,
+          projectId,
+        ),
+      );
+    },
   });
 
 export const getCollectionOptions = (projectId: string, collectionId: string) =>
   queryOptions({
     queryKey: ["projects", projectId, "collections", collectionId],
-    queryFn: async () =>
-      await operonApiClient.get<Collection>(
-        getEndpoint(DashboardEndpoints.PROJECTS) +
-          `/${projectId}/collections/${collectionId}`,
-      ),
+    queryFn: async () => {
+      const { workspaceId, environmentId } = getActiveIds();
+      if (!workspaceId || !environmentId)
+        throw new Error("No active workspace or environment");
+      return await operonApiClient.get<Collection>(
+        Endpoints.composeEndpoints.PROJECT_COLLECTION(
+          workspaceId,
+          environmentId,
+          projectId,
+          collectionId,
+        ),
+      );
+    },
   });
 
 export const createCollectionOptions = (projectId: string) => ({
-  mutationFn: async (dto: CreateCollectionDTO) =>
-    await operonApiClient.post<Collection>(
-      getEndpoint(DashboardEndpoints.PROJECTS) + `/${projectId}/collections`,
+  mutationFn: async (dto: CreateCollectionDTO) => {
+    const { workspaceId, environmentId } = getActiveIds();
+    if (!workspaceId || !environmentId)
+      throw new Error("No active workspace or environment");
+    return await operonApiClient.post<Collection>(
+      Endpoints.composeEndpoints.PROJECT_COLLECTIONS(
+        workspaceId,
+        environmentId,
+        projectId,
+      ),
       dto,
-    ),
+    );
+  },
 });
 
 export const updateCollectionOptions = (
   projectId: string,
   collectionId: string,
 ) => ({
-  mutationFn: async (schema: any) =>
-    await operonApiClient.patch<Collection>(
-      getEndpoint(DashboardEndpoints.PROJECTS) +
-        `/${projectId}/collections/${collectionId}`,
-      schema,
-    ),
+  mutationFn: async (data: any) => {
+    const { workspaceId, environmentId } = getActiveIds();
+    if (!workspaceId || !environmentId)
+      throw new Error("No active workspace or environment");
+    return await operonApiClient.patch<Collection>(
+      Endpoints.composeEndpoints.PROJECT_COLLECTION(
+        workspaceId,
+        environmentId,
+        projectId,
+        collectionId,
+      ),
+      data,
+    );
+  },
 });

@@ -1,9 +1,28 @@
+import { getAuthMiddlewareOptions } from "@operon/auth";
 import { createClient } from "@operon/request";
-import { withLogger } from "@operon/request/middleware";
+import { withLogger, withAuth } from "@operon/request/middleware";
 
 export const operonApiClient = createClient({
   baseURL: import.meta.env.VITE_OPERON_COMPOSE_BACKEND_URL,
 });
+
+operonApiClient.use(async (ctx, next) => {
+  if (typeof window !== "undefined") {
+    const workspaceId = localStorage.getItem("operon_active_workspace_id");
+    if (workspaceId) {
+      ctx.request.headers.set("x-workspace-id", workspaceId);
+    }
+    const environmentId = localStorage.getItem("operon_active_environment_id");
+    if (environmentId) {
+      ctx.request.headers.set("x-environment-id", environmentId);
+    }
+  }
+  return await next(ctx);
+});
+
+operonApiClient.use(
+  withAuth(getAuthMiddlewareOptions())
+);
 
 if (import.meta.env.DEV) {
   operonApiClient.use(withLogger());

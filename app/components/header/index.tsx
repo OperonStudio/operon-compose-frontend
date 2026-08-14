@@ -1,42 +1,18 @@
-import { Search } from "@operon/icons";
-import { Box, Breadcrumb, Input } from "@operon/ui";
-import { useLocation, useMatches, useNavigate } from "@tanstack/react-router";
-import { HeaderItems } from "./header-items";
-import * as classes from "./style";
 import { cx } from "@morph-css/kit";
+import { Bell, ChevronDown, Search } from "@operon/icons";
+import { Box, Breadcrumb, Button, Dropdown, Input } from "@operon/ui";
+import { useHeader } from "./hooks";
+import * as classes from "./style";
 
 export function Header() {
-  const location = useLocation();
-  const navigate = useNavigate();
-  const pathnames = location.pathname.split("/").filter((x) => x);
-
-  const breadcrumbItems = [
-    {
-      label: "Operon",
-      href: "/",
-      onClick: (e: React.MouseEvent) => {
-        e.preventDefault();
-        navigate({ to: "/" });
-      },
-    },
-    ...pathnames.map((path, index) => {
-      const href = `/${pathnames.slice(0, index + 1).join("/")}`;
-      const label = path.charAt(0).toUpperCase() + path.slice(1);
-      return {
-        label,
-        href,
-        onClick: (e: React.MouseEvent) => {
-          e.preventDefault();
-          navigate({ to: href });
-        },
-      };
-    }),
-  ];
-
-  const matches = useMatches();
-  const matchWithSearch = matches.find((m) => m.staticData?.search);
-  const { isSearchable = false, searchBarPlaceholder = "" } =
-    matchWithSearch?.staticData?.search || {};
+  const {
+    breadcrumbItems,
+    isSearchable,
+    searchBarPlaceholder,
+    environments,
+    activeEnvironment,
+    switchEnvironment,
+  } = useHeader();
 
   return (
     <Box {...classes.topbarStyle}>
@@ -45,9 +21,15 @@ export function Header() {
       </Box>
 
       {isSearchable && (
-        <Box 
-          className={cx(classes.searchContainerStyle.className, classes.hideOnMobileStyle.className)}
-          style={{ ...classes.searchContainerStyle.style, ...classes.hideOnMobileStyle.style }}
+        <Box
+          className={cx(
+            classes.searchContainerStyle.className,
+            classes.hideOnMobileStyle.className,
+          )}
+          style={{
+            ...classes.searchContainerStyle.style,
+            ...classes.hideOnMobileStyle.style,
+          }}
         >
           <Input
             startIcon={<Search size={16} />}
@@ -58,8 +40,42 @@ export function Header() {
         </Box>
       )}
 
-      <Box className={classes.hideOnMobileStyle.className} style={classes.hideOnMobileStyle.style}>
-        <HeaderItems />
+      <Box
+        className={classes.hideOnMobileStyle.className}
+        style={classes.hideOnMobileStyle.style}
+      >
+        <Box {...classes.rightActionsStyle}>
+          <Dropdown
+            trigger={
+              <Button
+                variant="outline"
+                size="sm"
+                disabled={environments.length === 0}
+              >
+                <Box display="flex" align="center" gap={8}>
+                  {activeEnvironment
+                    ? activeEnvironment.name
+                    : "No Environment"}
+                  <ChevronDown size={14} />
+                </Box>
+              </Button>
+            }
+            onSelect={(val) => switchEnvironment(val)}
+            items={environments.map((env) => ({
+              value: env.id,
+              label: env.name,
+            }))}
+          />
+
+          <Button
+            variant="ghost"
+            size="sm"
+            {...classes.iconButtonStyle}
+            rounded
+          >
+            <Bell size={16} color="var(--operon-color-text-muted)" />
+          </Button>
+        </Box>
       </Box>
     </Box>
   );

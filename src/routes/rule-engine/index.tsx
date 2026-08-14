@@ -1,17 +1,20 @@
-import { Box, Button } from "@operon/ui";
+import { getPageContentOptions } from "#/common/api/content-api";
+import { Box } from "@operon/ui";
+import { useSuspenseQuery } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/rule-engine/")({
+  loader: ({ context: { queryClient } }) =>
+    queryClient.ensureQueryData(getPageContentOptions("rule-engine")),
   component: RuleEngineIndex,
-  staticData: {
-    pageHeaderData: {
-      title: "Rule Engine",
-      subtitle: "Select a project to manage rules",
-    },
-  },
 });
 
 function RuleEngineIndex() {
+  const { data: pageData } = useSuspenseQuery(
+    getPageContentOptions("rule-engine"),
+  );
+  const emptyState = pageData.content.emptyState;
+
   return (
     <Box
       display="flex"
@@ -25,10 +28,9 @@ function RuleEngineIndex() {
       }}
     >
       <Box style={{ marginBottom: "16px" }}>
-        Select a project from the sidebar to view its rule engine
-        configurations.
+        {emptyState?.description ??
+          "Select a project from the sidebar to view its rule engine configurations."}
       </Box>
-      <Button variant="primary">Create Project</Button>
     </Box>
   );
 }

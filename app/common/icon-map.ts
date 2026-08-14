@@ -1,0 +1,67 @@
+import {
+  Bell,
+  Blocks,
+  Boxes,
+  Braces,
+  Check,
+  ChevronDown,
+  Command,
+  Copy,
+  FileEdit,
+  FolderGit2,
+  FolderKanban,
+  GitBranch,
+  KeyRound,
+  Layers,
+  LayoutDashboard,
+  Menu,
+  Moon,
+  Plug,
+  Plus,
+  RefreshCw,
+  Search,
+  Sun,
+  User,
+  Variable,
+  Workflow,
+  X,
+  type IconProps,
+} from "@operon/icons";
+import type { ComponentType } from "react";
+
+const ICON_REGISTRY: Record<string, ComponentType<IconProps>> = {
+  Blocks,
+  Boxes,
+  Braces,
+  Command,
+  FileEdit,
+  FolderGit2,
+  FolderKanban,
+  GitBranch,
+  Key: KeyRound,
+  KeyRound,
+  Layers,
+  LayoutDashboard,
+  Menu,
+  Moon,
+  Plug,
+  Plus,
+  Sun,
+  User,
+  Variable,
+  Workflow,
+  X,
+  Search,
+  Bell,
+  ChevronDown,
+  Check,
+  Copy,
+  RefreshCw,
+};
+
+export const resolveIcon = (
+  iconName: string | undefined,
+): ComponentType<IconProps> => {
+  if (!iconName) return Blocks;
+  return ICON_REGISTRY[iconName] ?? Blocks;
+};

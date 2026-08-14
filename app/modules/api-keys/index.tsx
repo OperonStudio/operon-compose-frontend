@@ -1,49 +1,72 @@
+import { getPageContentOptions } from "#/common/api/content-api";
 import { ConfirmModal } from "#/components/confirm-modal";
 import { Check, Copy, RefreshCw } from "@operon/icons";
 import { Box, Button, toast } from "@operon/ui";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useState } from "react";
+import {
+  useMutation,
+  useQuery,
+  useQueryClient,
+  useSuspenseQuery,
+} from "@tanstack/react-query";
+import { useEffect, useState } from "react";
 import { getApiKeysOptions, regenerateApiKeyOptions } from "./api";
 import * as classes from "./style";
 
 export const ApiKeysPage = () => {
   const [copiedKeyId, setCopiedKeyId] = useState<string | null>(null);
-  const [keyToRegenerate, setKeyToRegenerate] = useState<{ projectId: string; environment: string } | null>(null);
+  const [keyToRegenerate, setKeyToRegenerate] = useState<{
+    projectId: string;
+    environmentId: string;
+  } | null>(null);
 
   const queryClient = useQueryClient();
 
-  const { data: projectsWithKeys, isLoading } = useQuery(getApiKeysOptions);
+  const { data: projectsWithKeys, isLoading } = useQuery(getApiKeysOptions());
+  const { data: pageData } = useSuspenseQuery(
+    getPageContentOptions("api-keys"),
+  );
+  const labels = pageData.content.labels;
+  const modals = pageData.modals;
 
   const { mutate: regenerateApiKey, isPending } = useMutation({
     ...regenerateApiKeyOptions,
     onSuccess: (data) => {
-      toast.success(`Key for ${data.name} regenerated successfully!`);
-      queryClient.invalidateQueries({ queryKey: getApiKeysOptions.queryKey });
+      toast.success(
+        labels?.regenerateSuccess?.replace("{{name}}", data.name) ??
+          `Key for ${data.name} regenerated successfully!`,
+      );
+      queryClient.invalidateQueries({ queryKey: getApiKeysOptions().queryKey });
     },
     onError: () => {
-      toast.error("Failed to regenerate API key");
+      toast.error(labels?.regenerateError ?? "Failed to regenerate API key");
     },
   });
 
   const handleCopy = (keyId: string, value: string) => {
     navigator.clipboard.writeText(value);
     setCopiedKeyId(keyId);
-    toast.success("API key copied to clipboard");
+    toast.success(labels?.copySuccess ?? "API key copied to clipboard");
     setTimeout(() => setCopiedKeyId(null), 2000);
   };
 
-  const handleRegenerateClick = (projectId: string, environment: string) => {
-    setKeyToRegenerate({ projectId, environment });
+  const handleRegenerateClick = (projectId: string, environmentId: string) => {
+    setKeyToRegenerate({ projectId, environmentId });
   };
 
   const confirmRegenerate = () => {
     if (keyToRegenerate) {
-      regenerateApiKey({ projectId: keyToRegenerate.projectId, req: { environment: keyToRegenerate.environment } });
+      regenerateApiKey({
+        projectId: keyToRegenerate.projectId,
+        req: { environmentId: keyToRegenerate.environmentId },
+      });
       setKeyToRegenerate(null);
     }
   };
 
-  if (isLoading) {
+  const [isMounted, setIsMounted] = useState(false);
+  useEffect(() => setIsMounted(true), []);
+
+  if (!isMounted || isLoading) {
     return <Box {...classes.pageContainerStyle}>Loading API keys...</Box>;
   }
 
@@ -54,18 +77,15 @@ export const ApiKeysPage = () => {
           <Box key={project.id} {...classes.projectSectionStyle}>
             <Box display="flex" justify="space-between" align="center">
               <Box {...classes.projectTitleStyle}>{project.name}</Box>
-              <Button size="sm" variant="outline">
-                Create New Key
-              </Button>
             </Box>
 
             <Box display="flex" direction="column" gap={12}>
-              {project.keys.map((apiKey) => (
+              {project.keys?.map((apiKey) => (
                 <Box key={apiKey.id} {...classes.keyContainerStyle}>
                   <Box {...classes.keyInfoStyle}>
                     <Box {...classes.keyNameStyle}>{apiKey.name}</Box>
                     <Box {...classes.keyDateStyle}>
-                      Created on{" "}
+                      {labels?.createdOn ?? "Created on"}{" "}
                       {new Date(apiKey.createdAt).toLocaleDateString()}
                     </Box>
                   </Box>
@@ -116,10 +136,13 @@ export const ApiKeysPage = () => {
         isOpen={!!keyToRegenerate}
         onClose={() => setKeyToRegenerate(null)}
         onConfirm={confirmRegenerate}
-        title="Regenerate API Key"
-        message="Are you sure you want to regenerate this API key? Any applications using the old key will immediately lose access."
-        confirmText="Regenerate"
-        isDestructive={true}
+        title={modals?.regenerate?.title ?? "Regenerate API Key"}
+        message={
+          modals?.regenerate?.message ??
+          "Are you sure you want to regenerate this API key? Any applications using the old key will immediately lose access."
+        }
+        confirmText={modals?.regenerate?.confirmLabel ?? "Regenerate"}
+        isDestructive={modals?.regenerate?.isDestructive ?? true}
       />
     </Box>
   );

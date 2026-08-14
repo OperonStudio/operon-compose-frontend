@@ -1,4 +1,10 @@
-import { ThemeProvider as OperonThemeProvider, darkTheme, lightTheme } from "@operon/ui";
+import { appConfigContentOptions } from "#/common/api/content-api";
+import {
+  ThemeProvider as OperonThemeProvider,
+  darkTheme,
+  lightTheme,
+} from "@operon/ui";
+import { useSuspenseQuery } from "@tanstack/react-query";
 import { type ReactNode, createContext, useContext, useState } from "react";
 
 interface ThemeContextType {
@@ -12,7 +18,12 @@ const ThemeContext = createContext<ThemeContextType>({
 });
 
 export const AppThemeProvider = ({ children }: { children: ReactNode }) => {
-  const [isDark, setIsDark] = useState(false);
+  const { data: themeConfig = {} } = useSuspenseQuery(appConfigContentOptions);
+
+  const { theme } = themeConfig as any;
+  const { defaultMode = "light" } = theme || {};
+
+  const [isDark, setIsDark] = useState(defaultMode === "dark");
 
   const toggleTheme = () => setIsDark((prev) => !prev);
 

@@ -14,7 +14,8 @@ import { Route as RuleEngineRouteRouteImport } from './routes/rule-engine/route'
 import { Route as ApiKeysIndexRouteImport } from './routes/api-keys/index'
 import { Route as ContextIndexRouteImport } from './routes/context/index'
 import { Route as DashboardIndexRouteImport } from './routes/dashboard/index'
-import { Route as FeatureFlagsIndexRouteImport } from './routes/feature-flags/index'
+import { Route as EnvironmentsIndexRouteImport } from './routes/environments/index'
+import { Route as FlowIndexRouteImport } from './routes/flow/index'
 import { Route as ProjectsIndexRouteImport } from './routes/projects/index'
 import { Route as RuleEngineIndexRouteImport } from './routes/rule-engine/index'
 import { Route as ProjectsProjectIdIndexRouteImport } from './routes/projects/$projectId/index'
@@ -46,9 +47,14 @@ const DashboardIndexRoute = DashboardIndexRouteImport.update({
   path: '/dashboard/',
   getParentRoute: () => rootRouteImport,
 } as any)
-const FeatureFlagsIndexRoute = FeatureFlagsIndexRouteImport.update({
-  id: '/feature-flags/',
-  path: '/feature-flags/',
+const EnvironmentsIndexRoute = EnvironmentsIndexRouteImport.update({
+  id: '/environments/',
+  path: '/environments/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const FlowIndexRoute = FlowIndexRouteImport.update({
+  id: '/flow/',
+  path: '/flow/',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ProjectsIndexRoute = ProjectsIndexRouteImport.update({
@@ -85,7 +91,8 @@ export interface FileRoutesByFullPath {
   '/api-keys/': typeof ApiKeysIndexRoute
   '/context/': typeof ContextIndexRoute
   '/dashboard/': typeof DashboardIndexRoute
-  '/feature-flags/': typeof FeatureFlagsIndexRoute
+  '/environments/': typeof EnvironmentsIndexRoute
+  '/flow/': typeof FlowIndexRoute
   '/projects/': typeof ProjectsIndexRoute
   '/rule-engine/': typeof RuleEngineIndexRoute
   '/rule-engine/$projectId/$collectionId': typeof RuleEngineProjectIdCollectionIdRoute
@@ -97,7 +104,8 @@ export interface FileRoutesByTo {
   '/api-keys': typeof ApiKeysIndexRoute
   '/context': typeof ContextIndexRoute
   '/dashboard': typeof DashboardIndexRoute
-  '/feature-flags': typeof FeatureFlagsIndexRoute
+  '/environments': typeof EnvironmentsIndexRoute
+  '/flow': typeof FlowIndexRoute
   '/projects': typeof ProjectsIndexRoute
   '/rule-engine': typeof RuleEngineIndexRoute
   '/rule-engine/$projectId/$collectionId': typeof RuleEngineProjectIdCollectionIdRoute
@@ -111,7 +119,8 @@ export interface FileRoutesById {
   '/api-keys/': typeof ApiKeysIndexRoute
   '/context/': typeof ContextIndexRoute
   '/dashboard/': typeof DashboardIndexRoute
-  '/feature-flags/': typeof FeatureFlagsIndexRoute
+  '/environments/': typeof EnvironmentsIndexRoute
+  '/flow/': typeof FlowIndexRoute
   '/projects/': typeof ProjectsIndexRoute
   '/rule-engine/': typeof RuleEngineIndexRoute
   '/rule-engine/$projectId/$collectionId': typeof RuleEngineProjectIdCollectionIdRoute
@@ -126,7 +135,8 @@ export interface FileRouteTypes {
     | '/api-keys/'
     | '/context/'
     | '/dashboard/'
-    | '/feature-flags/'
+    | '/environments/'
+    | '/flow/'
     | '/projects/'
     | '/rule-engine/'
     | '/rule-engine/$projectId/$collectionId'
@@ -138,7 +148,8 @@ export interface FileRouteTypes {
     | '/api-keys'
     | '/context'
     | '/dashboard'
-    | '/feature-flags'
+    | '/environments'
+    | '/flow'
     | '/projects'
     | '/rule-engine'
     | '/rule-engine/$projectId/$collectionId'
@@ -151,7 +162,8 @@ export interface FileRouteTypes {
     | '/api-keys/'
     | '/context/'
     | '/dashboard/'
-    | '/feature-flags/'
+    | '/environments/'
+    | '/flow/'
     | '/projects/'
     | '/rule-engine/'
     | '/rule-engine/$projectId/$collectionId'
@@ -165,7 +177,8 @@ export interface RootRouteChildren {
   ApiKeysIndexRoute: typeof ApiKeysIndexRoute
   ContextIndexRoute: typeof ContextIndexRoute
   DashboardIndexRoute: typeof DashboardIndexRoute
-  FeatureFlagsIndexRoute: typeof FeatureFlagsIndexRoute
+  EnvironmentsIndexRoute: typeof EnvironmentsIndexRoute
+  FlowIndexRoute: typeof FlowIndexRoute
   ProjectsIndexRoute: typeof ProjectsIndexRoute
   ProjectsProjectIdIndexRoute: typeof ProjectsProjectIdIndexRoute
 }
@@ -207,11 +220,18 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/feature-flags/': {
-      id: '/feature-flags/'
-      path: '/feature-flags'
-      fullPath: '/feature-flags/'
-      preLoaderRoute: typeof FeatureFlagsIndexRouteImport
+    '/environments/': {
+      id: '/environments/'
+      path: '/environments'
+      fullPath: '/environments/'
+      preLoaderRoute: typeof EnvironmentsIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/flow/': {
+      id: '/flow/'
+      path: '/flow'
+      fullPath: '/flow/'
+      preLoaderRoute: typeof FlowIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/projects/': {
@@ -274,7 +294,8 @@ const rootRouteChildren: RootRouteChildren = {
   ApiKeysIndexRoute: ApiKeysIndexRoute,
   ContextIndexRoute: ContextIndexRoute,
   DashboardIndexRoute: DashboardIndexRoute,
-  FeatureFlagsIndexRoute: FeatureFlagsIndexRoute,
+  EnvironmentsIndexRoute: EnvironmentsIndexRoute,
+  FlowIndexRoute: FlowIndexRoute,
   ProjectsIndexRoute: ProjectsIndexRoute,
   ProjectsProjectIdIndexRoute: ProjectsProjectIdIndexRoute,
 }

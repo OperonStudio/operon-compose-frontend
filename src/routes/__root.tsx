@@ -1,20 +1,5 @@
 import { RootDocument } from "#/modules/root-document";
 import "@morph-css/kit/css";
-import {
-  CheckCircle2,
-  FileEdit,
-  FolderKanban,
-  GitBranch,
-  KeyRound,
-  Layers,
-  LayoutDashboard,
-  Rocket,
-  ScrollText,
-  ShieldCheck,
-  ToggleLeft,
-  Undo2,
-  Variable,
-} from "@operon/icons";
 import operonMorphCss from "@operon/ui/dist/morphcss.css?url";
 import operonCss from "@operon/ui/dist/style.css?url";
 import { createRootRouteWithContext } from "@tanstack/react-router";
@@ -41,6 +26,19 @@ export const Route = createRootRouteWithContext<MyRouterContext>()({
     ],
     links: [
       {
+        rel: "preconnect",
+        href: "https://fonts.googleapis.com",
+      },
+      {
+        rel: "preconnect",
+        href: "https://fonts.gstatic.com",
+        crossOrigin: "anonymous",
+      },
+      {
+        rel: "stylesheet",
+        href: "https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap",
+      },
+      {
         rel: "preload",
         as: "style",
         href: operonCss,
@@ -60,70 +58,5 @@ export const Route = createRootRouteWithContext<MyRouterContext>()({
       },
     ],
   }),
-  staticData: {
-    sidebarGroups: [
-      {
-        title: "WORKSPACE",
-        items: [
-          { label: "Dashboard", icon: LayoutDashboard, href: "/" },
-          {
-            label: "Projects",
-            icon: FolderKanban,
-            href: "/projects",
-          },
-        ],
-      },
-      {
-        title: "RUNTIME",
-        items: [
-          {
-            label: "Rule Engine",
-            icon: GitBranch,
-            href: "/rule-engine",
-          },
-          { label: "Context", icon: Variable, href: "/context" },
-          {
-            label: "Feature Flags",
-            icon: ToggleLeft,
-            href: "/feature-flags",
-          },
-        ],
-      },
-      {
-        title: "DELIVERY",
-        items: [
-          {
-            label: "Environments",
-            icon: Layers,
-            href: "/environments",
-          },
-          { label: "Drafts", icon: FileEdit, href: "/drafts" },
-          {
-            label: "Approvals",
-            icon: CheckCircle2,
-            href: "/approvals",
-          },
-          { label: "Publishes", icon: Rocket, href: "/publishes" },
-          { label: "Restores", icon: Undo2, href: "/restores" },
-        ],
-      },
-      {
-        title: "GOVERNANCE",
-        items: [
-          {
-            label: "Audit Logs",
-            icon: ScrollText,
-            href: "/audit-logs",
-          },
-          {
-            label: "Access Control",
-            icon: ShieldCheck,
-            href: "/access-control",
-          },
-          { label: "API Keys", icon: KeyRound, href: "/api-keys" },
-        ],
-      },
-    ],
-  },
   shellComponent: RootDocument,
 });

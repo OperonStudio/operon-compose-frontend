@@ -1,12 +1,15 @@
-import type { PageHeaderAction, PageHeaderData } from "#/common/interfaces";
+import { getPageContentOptions } from "#/common/api/content-api";
+import { resolveIcon } from "#/common/icon-map";
+import type { PageAction } from "#/common/api/interfaces";
 import { useHeaderActionHandler } from "#/contexts/header-actions";
 import { Box, Button } from "@operon/ui";
-import { useMatches } from "@tanstack/react-router";
+import { useQuery } from "@tanstack/react-query";
+import { useLocation } from "@tanstack/react-router";
 import * as classes from "./style";
 
-function ActionButton({ action }: { action: PageHeaderAction }) {
+function ActionButton({ action }: { action: PageAction }) {
   const handler = useHeaderActionHandler(action.id);
-  const Icon = action.icon;
+  const Icon = resolveIcon(action.icon);
 
   return (
     <Button
@@ -14,7 +17,7 @@ function ActionButton({ action }: { action: PageHeaderAction }) {
       size="sm"
       onClick={handler}
       disabled={!handler}
-      startIcon={Icon && <Icon size={16} />}
+      startIcon={<Icon size={16} />}
     >
       {action.label}
     </Button>
@@ -22,34 +25,18 @@ function ActionButton({ action }: { action: PageHeaderAction }) {
 }
 
 export function PageHeader() {
-  const matches = useMatches();
-  const matchWithPageHeaderData = matches.find(
-    (m) =>
-      (m.context as any)?.pageHeaderData ||
-      (m.loaderData as any)?.pageHeaderData ||
-      m.staticData?.pageHeaderData,
-  );
+  const location = useLocation();
+  let collectionId = location.pathname.split("/")[1];
 
-  if (!matchWithPageHeaderData) return null;
+  // if (collectionId === "projects" && location.pathname.split("/").length > 2) {
+  //   collectionId = "project-details";
+  // }
 
-  const contextData =
-    (matchWithPageHeaderData.context as any)?.pageHeaderData || {};
-  const loaderData =
-    (matchWithPageHeaderData.loaderData as any)?.pageHeaderData || {};
-  const staticData =
-    (matchWithPageHeaderData.staticData as any)?.pageHeaderData || {};
+  const { data: pageData } = useQuery(getPageContentOptions(collectionId));
 
-  const pageHeaderData = {
-    ...staticData,
-    ...loaderData,
-    ...contextData,
-  };
+  if (!pageData) return null;
 
-  const {
-    title = "",
-    subtitle = "",
-    actions = [],
-  } = pageHeaderData as PageHeaderData;
+  const { title = "", subtitle = "", actions = [] } = pageData.page || {};
 
   return (
     <Box {...classes.pageHeaderContainerStyle}>
@@ -60,7 +47,7 @@ export function PageHeader() {
 
       {actions.length > 0 && (
         <Box display="flex" gap={12} align="center">
-          {actions.map((action) => (
+          {actions.map((action: PageAction) => (
             <ActionButton key={action.id} action={action} />
           ))}
         </Box>

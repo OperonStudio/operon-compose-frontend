@@ -1,19 +1,9 @@
+import { getPageContentOptions } from "#/common/api/content-api";
+import { DashboardPage } from "#/modules/dashboard";
 import { createFileRoute } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/dashboard/")({
-  component: RouteComponent,
-  staticData: {
-    pageHeaderData: {
-      title: "Dashboard",
-      subtitle: "Welcome to the dashboard",
-    },
-    search: {
-      isSearchable: true,
-      searchBarPlaceholder: "Search In Dashboards...",
-    },
-  },
+  loader: ({ context: { queryClient } }) =>
+    queryClient.ensureQueryData(getPageContentOptions("dashboard")),
+  component: DashboardPage,
 });
-
-function RouteComponent() {
-  return <div>Hello "/dash/"!</div>;
-}

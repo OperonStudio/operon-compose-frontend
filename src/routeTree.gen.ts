@@ -18,6 +18,7 @@ import { Route as EnvironmentsIndexRouteImport } from './routes/environments/ind
 import { Route as FlowIndexRouteImport } from './routes/flow/index'
 import { Route as ProjectsIndexRouteImport } from './routes/projects/index'
 import { Route as RuleEngineIndexRouteImport } from './routes/rule-engine/index'
+import { Route as SettingsIndexRouteImport } from './routes/settings/index'
 import { Route as ProjectsProjectIdIndexRouteImport } from './routes/projects/$projectId/index'
 import { Route as RuleEngineProjectIdIndexRouteImport } from './routes/rule-engine/$projectId/index'
 import { Route as RuleEngineProjectIdCollectionIdRouteImport } from './routes/rule-engine/$projectId/$collectionId'
@@ -67,6 +68,11 @@ const RuleEngineIndexRoute = RuleEngineIndexRouteImport.update({
   path: '/',
   getParentRoute: () => RuleEngineRouteRoute,
 } as any)
+const SettingsIndexRoute = SettingsIndexRouteImport.update({
+  id: '/settings/',
+  path: '/settings/',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ProjectsProjectIdIndexRoute = ProjectsProjectIdIndexRouteImport.update({
   id: '/projects/$projectId/',
   path: '/projects/$projectId/',
@@ -95,6 +101,7 @@ export interface FileRoutesByFullPath {
   '/flow/': typeof FlowIndexRoute
   '/projects/': typeof ProjectsIndexRoute
   '/rule-engine/': typeof RuleEngineIndexRoute
+  '/settings/': typeof SettingsIndexRoute
   '/rule-engine/$projectId/$collectionId': typeof RuleEngineProjectIdCollectionIdRoute
   '/projects/$projectId/': typeof ProjectsProjectIdIndexRoute
   '/rule-engine/$projectId/': typeof RuleEngineProjectIdIndexRoute
@@ -108,6 +115,7 @@ export interface FileRoutesByTo {
   '/flow': typeof FlowIndexRoute
   '/projects': typeof ProjectsIndexRoute
   '/rule-engine': typeof RuleEngineIndexRoute
+  '/settings': typeof SettingsIndexRoute
   '/rule-engine/$projectId/$collectionId': typeof RuleEngineProjectIdCollectionIdRoute
   '/projects/$projectId': typeof ProjectsProjectIdIndexRoute
   '/rule-engine/$projectId': typeof RuleEngineProjectIdIndexRoute
@@ -123,6 +131,7 @@ export interface FileRoutesById {
   '/flow/': typeof FlowIndexRoute
   '/projects/': typeof ProjectsIndexRoute
   '/rule-engine/': typeof RuleEngineIndexRoute
+  '/settings/': typeof SettingsIndexRoute
   '/rule-engine/$projectId/$collectionId': typeof RuleEngineProjectIdCollectionIdRoute
   '/projects/$projectId/': typeof ProjectsProjectIdIndexRoute
   '/rule-engine/$projectId/': typeof RuleEngineProjectIdIndexRoute
@@ -139,6 +148,7 @@ export interface FileRouteTypes {
     | '/flow/'
     | '/projects/'
     | '/rule-engine/'
+    | '/settings/'
     | '/rule-engine/$projectId/$collectionId'
     | '/projects/$projectId/'
     | '/rule-engine/$projectId/'
@@ -152,6 +162,7 @@ export interface FileRouteTypes {
     | '/flow'
     | '/projects'
     | '/rule-engine'
+    | '/settings'
     | '/rule-engine/$projectId/$collectionId'
     | '/projects/$projectId'
     | '/rule-engine/$projectId'
@@ -166,6 +177,7 @@ export interface FileRouteTypes {
     | '/flow/'
     | '/projects/'
     | '/rule-engine/'
+    | '/settings/'
     | '/rule-engine/$projectId/$collectionId'
     | '/projects/$projectId/'
     | '/rule-engine/$projectId/'
@@ -180,6 +192,7 @@ export interface RootRouteChildren {
   EnvironmentsIndexRoute: typeof EnvironmentsIndexRoute
   FlowIndexRoute: typeof FlowIndexRoute
   ProjectsIndexRoute: typeof ProjectsIndexRoute
+  SettingsIndexRoute: typeof SettingsIndexRoute
   ProjectsProjectIdIndexRoute: typeof ProjectsProjectIdIndexRoute
 }
 
@@ -248,6 +261,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof RuleEngineIndexRouteImport
       parentRoute: typeof RuleEngineRouteRoute
     }
+    '/settings/': {
+      id: '/settings/'
+      path: '/settings'
+      fullPath: '/settings/'
+      preLoaderRoute: typeof SettingsIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/projects/$projectId/': {
       id: '/projects/$projectId/'
       path: '/projects/$projectId'
@@ -297,6 +317,7 @@ const rootRouteChildren: RootRouteChildren = {
   EnvironmentsIndexRoute: EnvironmentsIndexRoute,
   FlowIndexRoute: FlowIndexRoute,
   ProjectsIndexRoute: ProjectsIndexRoute,
+  SettingsIndexRoute: SettingsIndexRoute,
   ProjectsProjectIdIndexRoute: ProjectsProjectIdIndexRoute,
 }
 export const routeTree = rootRouteImport

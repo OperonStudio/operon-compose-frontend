@@ -10,9 +10,9 @@ export const useDashboard = () => {
     ...getUsageOptions(),
   });
 
-  const { data: pageData } = useSuspenseQuery(getPageContentOptions("usage"));
-  const statCardConfigs = (pageData.content.statCards as any[]) ?? [];
-  const labels = pageData.content.labels;
+  const { data: pageData } = useSuspenseQuery(getPageContentOptions("dashboard"));
+  const statCardConfigs = (pageData?.content?.statCards as any[]) ?? [];
+  const labels = pageData?.content?.labels;
 
   const statCards =
     usage && statCardConfigs

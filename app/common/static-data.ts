@@ -1,10 +1,22 @@
-import type { AppConfig, SidebarContent, PageContent, StatCardConfig } from "./api/interfaces";
+import type {
+  AppConfig,
+  PageContent,
+  SidebarContent,
+  StatCardConfig,
+} from "./api/interfaces";
 
 export const ProjectDetailsPage: PageContent = {
   page: {
     title: "Project Details",
     subtitle: "Manage your project collections and settings",
-    actions: [{ id: "add-new-collection", label: "Add Collection", icon: "Plus", variant: "primary" }],
+    actions: [
+      {
+        id: "add-new-collection",
+        label: "Add Collection",
+        icon: "Plus",
+        variant: "primary",
+      },
+    ],
   },
   content: {},
 };
@@ -47,6 +59,12 @@ export const SidebarData: SidebarContent = {
         { label: "Routing Flow", icon: "Workflow", href: "/flow" },
       ],
     },
+    {
+      title: "Workspace",
+      items: [
+        { label: "Settings & Team", icon: "Settings", href: "/settings" },
+      ],
+    },
   ],
 };
 
@@ -58,9 +76,28 @@ export const DashboardPage: PageContent<{ statCards: StatCardConfig[] }> = {
   },
   content: {
     statCards: [
-      { key: "api_calls", title: "API Calls", icon: "Activity", color: "blue", bg: "blue.50" },
-      { key: "bandwidth", title: "Bandwidth Used", icon: "Database", color: "purple", bg: "purple.50", format: "bytes" },
-      { key: "active_projects", title: "Active Projects", icon: "FolderGit2", color: "green", bg: "green.50" },
+      {
+        key: "api_calls",
+        title: "API Calls",
+        icon: "Activity",
+        color: "blue",
+        bg: "blue.50",
+      },
+      {
+        key: "bandwidth",
+        title: "Bandwidth Used",
+        icon: "Database",
+        color: "purple",
+        bg: "purple.50",
+        format: "bytes",
+      },
+      {
+        key: "active_projects",
+        title: "Active Projects",
+        icon: "FolderGit2",
+        color: "green",
+        bg: "green.50",
+      },
     ],
   },
 };
@@ -69,7 +106,14 @@ export const ProjectsPage: PageContent = {
   page: {
     title: "Projects",
     subtitle: "Manage your Operon projects",
-    actions: [{ id: "create", label: "Create Project", icon: "Plus", variant: "primary" }],
+    actions: [
+      {
+        id: "create",
+        label: "Create Project",
+        icon: "Plus",
+        variant: "primary",
+      },
+    ],
   },
   content: {
     emptyState: {
@@ -96,13 +140,21 @@ export const EnvironmentsPage: PageContent = {
   page: {
     title: "Environments",
     subtitle: "Manage deployment environments",
-    actions: [{ id: "create-environment-button", label: "Create Environment", icon: "Plus", variant: "primary" }],
+    actions: [
+      {
+        id: "create-environment-button",
+        label: "Create Environment",
+        icon: "Plus",
+        variant: "primary",
+      },
+    ],
   },
   content: {
     emptyState: {
       icon: "Layers",
       title: "No environments yet",
-      description: "Environments represent deployment targets like <strong>development</strong>, <strong>staging</strong>, or <strong>production</strong>. You must create at least one environment before you can generate API keys for your projects.",
+      description:
+        "Environments represent deployment targets like <strong>development</strong>, <strong>staging</strong>, or <strong>production</strong>. You must create at least one environment before you can generate API keys for your projects.",
       actionLabel: "Create First Environment",
     },
   },
@@ -126,7 +178,14 @@ export const ContextModulePage: PageContent = {
   page: {
     title: "Context Variables",
     subtitle: "Define global context variables for your rules",
-    actions: [{ id: "add-context-button", label: "Add Variable", icon: "Plus", variant: "primary" }],
+    actions: [
+      {
+        id: "add-context-button",
+        label: "Add Variable",
+        icon: "Plus",
+        variant: "primary",
+      },
+    ],
   },
   content: {
     emptyState: {
@@ -161,7 +220,17 @@ export const FlowPage: PageContent = {
     emptyState: {
       icon: "Workflow",
       title: "No Selection Made",
-      description: "Select a project and collection from the dropdowns above to visualize its routing flow.",
+      description:
+        "Select a project and collection from the dropdowns above to visualize its routing flow.",
     },
   },
+};
+
+export const SettingsStaticPage: PageContent = {
+  page: {
+    title: "Settings",
+    subtitle: "Manage workspace team members and configuration",
+    icon: "Settings",
+  },
+  content: {},
 };

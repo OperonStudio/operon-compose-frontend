@@ -1,15 +1,19 @@
+export type OutcomeType = "visible" | "hidden" | "redirect" | "transform";
+
 export interface Condition {
-  id: string;
   attribute: string;
-  operator: string;
-  values: string[];
+  operator: "=" | "!=" | ">" | "<" | ">=" | "<=" | "contains";
+  value: any;
 }
 
 export interface Decision {
   id: string;
   label: string;
+  description?: string;
   priority: number;
-  matchType: "ANY" | "ALL";
+  enabled: boolean;
+  outcome: OutcomeType;
+  redirectUrl?: string;
+  transformKey?: string;
   conditions: Condition[];
-  outcome: "Visible" | "Invisible";
 }

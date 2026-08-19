@@ -1,10 +1,6 @@
 import { fetchContent } from "@/server/content";
 import { queryOptions } from "@tanstack/react-query";
-import type {
-  AppConfig,
-  PageContent,
-  SidebarContent,
-} from "./interfaces";
+import type { AppConfig, PageContent, SidebarContent } from "./interfaces";
 
 const CONTENT_STALE_TIME = 5 * 60 * 1000;
 

@@ -1,6 +1,6 @@
 import { getPageContentOptions } from "#/common/api/content-api";
-import { resolveIcon } from "#/common/icon-map";
 import type { PageAction } from "#/common/api/interfaces";
+import { resolveIcon } from "#/common/icon-map";
 import { useHeaderActionHandler } from "#/contexts/header-actions";
 import { Box, Button } from "@operon/ui";
 import { useQuery } from "@tanstack/react-query";

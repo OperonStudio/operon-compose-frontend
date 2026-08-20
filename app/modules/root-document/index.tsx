@@ -21,6 +21,13 @@ export const RootDocument = ({ children }: { children: React.ReactNode }) => {
     <html lang="en">
       <head>
         <HeadContent />
+        <style>{`
+          @media (max-width: 900px) {
+            aside {
+              display: none !important;
+            }
+          }
+        `}</style>
       </head>
       <body>
         <ThemeProvider defaultDark={false}>

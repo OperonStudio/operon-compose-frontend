@@ -2,29 +2,33 @@ import { css } from "@morph-css/kit";
 
 export const pageContainerStyle = css({
   display: "flex",
+  flexDirection: "column",
   height: "100%",
   width: "100%",
+  maxWidth: "100vw",
+  boxSizing: "border-box",
   minHeight: "calc(100vh - 140px)",
   backgroundColor: "var(--operon-color-background, #fdfdfc)",
   borderTop: "1px solid var(--operon-color-border, #c7c7e6)",
-  "@media (max-width: 768px)": {
-    flexDirection: "column",
+  "@media (min-width: 901px)": {
+    flexDirection: "row",
   },
 });
 
 export const sidebarStyle = css({
-  width: "280px",
-  flexShrink: 0,
-  borderRight: "1px solid var(--operon-color-border, #c7c7e6)",
+  width: "100%",
+  boxSizing: "border-box",
+  borderBottom: "1px solid var(--operon-color-border, #c7c7e6)",
   backgroundColor: "var(--operon-color-surface, #fff)",
   display: "flex",
   flexDirection: "column",
-  padding: "24px 16px",
-  "@media (max-width: 768px)": {
-    width: "100%",
-    borderRight: "none",
-    borderBottom: "1px solid var(--operon-color-border, #c7c7e6)",
-    padding: "16px",
+  padding: "16px",
+  "@media (min-width: 901px)": {
+    width: "280px",
+    flexShrink: 0,
+    borderBottom: "none",
+    borderRight: "1px solid var(--operon-color-border, #c7c7e6)",
+    padding: "24px 16px",
   },
 });
 
@@ -93,10 +97,14 @@ export const nestedListContainerStyle = css({
 
 export const contentAreaStyle = css({
   flex: 1,
-  padding: "48px",
+  width: "100%",
+  maxWidth: "100vw",
+  boxSizing: "border-box",
+  padding: "16px",
   display: "flex",
   flexDirection: "column",
-  "@media (max-width: 768px)": {
-    padding: "16px",
+  overflowX: "hidden",
+  "@media (min-width: 901px)": {
+    padding: "48px",
   },
 });

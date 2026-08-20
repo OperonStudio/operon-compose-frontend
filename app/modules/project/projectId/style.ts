@@ -2,29 +2,33 @@ import { css } from "@morph-css/kit";
 
 export const pageContainerStyle = css({
   display: "flex",
+  flexDirection: "column",
   height: "100%",
   width: "100%",
+  maxWidth: "100vw",
+  boxSizing: "border-box",
   minHeight: "calc(100vh - 140px)",
   backgroundColor: "var(--operon-color-background)",
   borderTop: "1px solid var(--operon-color-border)",
-  "@media (max-width: 768px)": {
-    flexDirection: "column",
+  "@media (min-width: 901px)": {
+    flexDirection: "row",
   },
 });
 
 export const sidebarStyle = css({
-  width: "280px",
-  flexShrink: 0,
-  borderRight: "1px solid var(--operon-color-border)",
+  width: "100%",
+  boxSizing: "border-box",
+  borderBottom: "1px solid var(--operon-color-border)",
   backgroundColor: "var(--operon-color-surface)",
   display: "flex",
   flexDirection: "column",
-  padding: "24px 16px",
-  "@media (max-width: 768px)": {
-    width: "100%",
-    borderRight: "none",
-    borderBottom: "1px solid var(--operon-color-border)",
-    padding: "16px",
+  padding: "16px",
+  "@media (min-width: 901px)": {
+    width: "280px",
+    flexShrink: 0,
+    borderBottom: "none",
+    borderRight: "1px solid var(--operon-color-border)",
+    padding: "24px 16px",
   },
 });
 
@@ -60,11 +64,15 @@ export const collectionItemStyle = css({
 
 export const contentAreaStyle = css({
   flex: 1,
-  padding: "48px",
+  width: "100%",
+  maxWidth: "100vw",
+  boxSizing: "border-box",
+  padding: "16px",
   display: "flex",
   flexDirection: "column",
-  "@media (max-width: 768px)": {
-    padding: "16px",
+  overflowX: "hidden",
+  "@media (min-width: 901px)": {
+    padding: "48px",
   },
 });
 

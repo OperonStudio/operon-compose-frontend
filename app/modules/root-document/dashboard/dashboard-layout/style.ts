@@ -5,10 +5,9 @@ import { css } from "@morph-css/kit";
 
 export const rootStyle = css({
   width: "100%",
+  maxWidth: "100vw",
   minHeight: "100vh",
-  "@media (max-width: 768px)": {
-    overflowX: "hidden",
-  },
+  overflowX: "hidden",
 });
 
 export const orgLineStyle = css({

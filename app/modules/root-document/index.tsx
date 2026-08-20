@@ -12,7 +12,7 @@ import { Dashboard } from "./dashboard/index";
 const AUTH_API_URL =
   import.meta.env.VITE_OPERON_AUTH_API_URL ?? "http://localhost:8081";
 const HOMEPAGE_URL =
-  import.meta.env.VITE_HOMEPAGE_URL ?? "http://localhost:4001";
+  import.meta.env.VITE_HOMEPAGE_URL ?? "https://operonstudio.tech";
 
 // Extract token synchronously before TanStack Router mounts and strips it
 if (typeof window !== "undefined") {

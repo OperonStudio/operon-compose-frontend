@@ -20,8 +20,9 @@ import { Link, useLocation } from "@tanstack/react-router";
 import * as classes from "./style";
 
 const HOMEPAGE_URL =
-  import.meta.env.VITE_HOMEPAGE_URL ?? "http://localhost:4001";
-const COMPOSE_URL = import.meta.env.VITE_COMPOSE_URL ?? "http://localhost:4000";
+  import.meta.env.VITE_HOMEPAGE_URL ?? "https://operonstudio.tech";
+const COMPOSE_URL =
+  import.meta.env.VITE_COMPOSE_URL ?? "https://compose.operonstudio.tech";
 const CODEBLOCKS_URL =
   import.meta.env.VITE_CODEBLOCKS_URL ?? "http://localhost:4002";
 const ANALYTICS_URL =

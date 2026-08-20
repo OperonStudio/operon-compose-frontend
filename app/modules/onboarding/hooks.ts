@@ -2,7 +2,7 @@ import { Endpoints } from "#/common/api/endpoints";
 import type { Workspace } from "#/components/workspace-switcher/api";
 import { operonApiClient } from "#/libs/apiClient";
 import type { Environment } from "#/modules/environments/types";
-import { toast } from "@operon/ui";
+import { toast } from "@operonstudio/ui";
 import {
   mutationOptions,
   queryOptions,

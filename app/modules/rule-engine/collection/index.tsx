@@ -1,4 +1,4 @@
-import { Box, Button, Tabs, toast } from "@operon/ui";
+import { Box, Button, Tabs, toast } from "@operonstudio/ui";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { getContextsOptions } from "../../context-module/api";

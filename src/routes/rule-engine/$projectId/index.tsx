@@ -1,5 +1,5 @@
 import { RuleEngineCollectionPage } from "#/modules/rule-engine/collection";
-import { Box } from "@operon/ui";
+import { Box } from "@operonstudio/ui";
 import { createFileRoute } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/rule-engine/$projectId/")({

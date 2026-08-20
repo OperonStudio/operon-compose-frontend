@@ -1,5 +1,5 @@
-import { Box, Button, Chip } from "@operon/ui";
-import { X } from "@operon/icons";
+import { Box, Button, Chip } from "@operonstudio/ui";
+import { X } from "@operonstudio/icons";
 import type { ContextVariable } from "../../../context-module/api";
 
 interface AttributesSectionProps {

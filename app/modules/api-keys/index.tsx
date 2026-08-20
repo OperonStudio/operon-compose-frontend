@@ -1,7 +1,7 @@
 import { getPageContentOptions } from "#/common/api/content-api";
 import { ConfirmModal } from "#/components/confirm-modal";
-import { Check, Copy, RefreshCw } from "@operon/icons";
-import { Box, Button, toast } from "@operon/ui";
+import { Check, Copy, RefreshCw } from "@operonstudio/icons";
+import { Box, Button, toast } from "@operonstudio/ui";
 import {
   useMutation,
   useQuery,

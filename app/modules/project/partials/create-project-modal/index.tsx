@@ -1,4 +1,4 @@
-import { Box, Button, Input, Modal, Textarea } from "@operon/ui";
+import { Box, Button, Input, Modal, Textarea } from "@operonstudio/ui";
 import { useState } from "react";
 
 export const CreateProjectModal = ({

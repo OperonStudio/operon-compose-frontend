@@ -3,7 +3,7 @@ import {
   ThemeProvider as OperonThemeProvider,
   darkTheme,
   lightTheme,
-} from "@operon/ui";
+} from "@operonstudio/ui";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { type ReactNode, createContext, useContext, useState } from "react";
 

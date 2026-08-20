@@ -2,8 +2,8 @@ import { getPageContentOptions } from "#/common/api/content-api";
 import { resolveIcon } from "#/common/icon-map";
 import { ConfirmModal } from "#/components/confirm-modal";
 import { useHeaderActions } from "#/contexts/header-actions";
-import { FileEdit, Plus, X } from "@operon/icons";
-import { Box, Button, toast } from "@operon/ui";
+import { FileEdit, Plus, X } from "@operonstudio/icons";
+import { Box, Button, toast } from "@operonstudio/ui";
 import {
   useMutation,
   useQuery,

@@ -1,6 +1,6 @@
 import { cx } from "@morph-css/kit";
-import { Bell, ChevronDown, Search } from "@operon/icons";
-import { Box, Breadcrumb, Button, Dropdown, Input } from "@operon/ui";
+import { Bell, ChevronDown, Search } from "@operonstudio/icons";
+import { Box, Breadcrumb, Button, Dropdown, Input } from "@operonstudio/ui";
 import { useHeader } from "./hooks";
 import * as classes from "./style";
 

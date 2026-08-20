@@ -1,5 +1,5 @@
-import type { IconProps } from "@operon/icons";
-import * as OperonIcons from "@operon/icons";
+import type { IconProps } from "@operonstudio/icons";
+import * as OperonIcons from "@operonstudio/icons";
 import type { ComponentType } from "react";
 
 const iconMap = OperonIcons as Record<string, any>;

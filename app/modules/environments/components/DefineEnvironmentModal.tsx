@@ -1,4 +1,4 @@
-import { Box, Button, Input, Modal, toast } from "@operon/ui";
+import { Box, Button, Input, Modal, toast } from "@operonstudio/ui";
 import { useEffect, useState } from "react";
 import type { Environment } from "../types";
 

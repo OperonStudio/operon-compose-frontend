@@ -1,7 +1,7 @@
 import { type Workspace } from "#/components/workspace-switcher/api";
 import { cx } from "@morph-css/kit";
-import { Check, ChevronDown, Plus } from "@operon/icons";
-import { Box, Button } from "@operon/ui";
+import { Check, ChevronDown, Plus } from "@operonstudio/icons";
+import { Box, Button } from "@operonstudio/ui";
 import React from "react";
 import { useWorkspaceSwitcher } from "./hooks";
 import * as classes from "./style";

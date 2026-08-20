@@ -1,5 +1,5 @@
 import { getPageContentOptions } from "#/common/api/content-api";
-import { Box } from "@operon/ui";
+import { Box } from "@operonstudio/ui";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
 

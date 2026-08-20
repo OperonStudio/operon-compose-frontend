@@ -1,5 +1,5 @@
-import { ArrowRight, FileEdit, X, Zap } from "@operon/icons";
-import { Box, Button, Chip } from "@operon/ui";
+import { ArrowRight, FileEdit, X, Zap } from "@operonstudio/icons";
+import { Box, Button, Chip } from "@operonstudio/ui";
 import type { Decision } from "../types";
 
 interface DecisionListProps {

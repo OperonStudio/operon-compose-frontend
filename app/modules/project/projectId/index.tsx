@@ -2,8 +2,8 @@ import { PromptModal } from "#/components/prompt-modal";
 import { useHeaderActions } from "#/contexts/header-actions";
 import { getApiKeysOptions } from "#/modules/api-keys/api";
 import { useActiveEnvironment } from "#/modules/environments/hooks";
-import { Copy } from "@operon/icons";
-import { Box, Button, Dropdown, Sidebar, Textarea, toast } from "@operon/ui";
+import { Copy } from "@operonstudio/icons";
+import { Box, Button, Dropdown, Sidebar, Textarea, toast } from "@operonstudio/ui";
 import {
   useMutation,
   useQuery,

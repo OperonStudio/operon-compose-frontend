@@ -1,5 +1,5 @@
-import { ChevronDown, X } from "@operon/icons";
-import { Box, Button, Dropdown, Input, Modal, Radio, toast } from "@operon/ui";
+import { ChevronDown, X } from "@operonstudio/icons";
+import { Box, Button, Dropdown, Input, Modal, Radio, toast } from "@operonstudio/ui";
 import { useEffect, useState } from "react";
 import type { Condition, Decision, OutcomeType } from "../types";
 

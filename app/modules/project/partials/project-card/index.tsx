@@ -1,6 +1,6 @@
 import { usePhone } from "#/libs/utils";
-import { FileEdit, X } from "@operon/icons";
-import { Box, Button, Card, Chip } from "@operon/ui";
+import { FileEdit, X } from "@operonstudio/icons";
+import { Box, Button, Card, Chip } from "@operonstudio/ui";
 import { Link } from "@tanstack/react-router";
 import * as classes from "./style";
 

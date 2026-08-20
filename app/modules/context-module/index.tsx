@@ -1,8 +1,8 @@
 import { getPageContentOptions } from "#/common/api/content-api";
 import { ConfirmModal } from "#/components/confirm-modal";
 import { useHeaderActions } from "#/contexts/header-actions";
-import { ChevronDown, FileEdit, X } from "@operon/icons";
-import { Box, Button, Chip, Dropdown, Input, Modal } from "@operon/ui";
+import { ChevronDown, FileEdit, X } from "@operonstudio/icons";
+import { Box, Button, Chip, Dropdown, Input, Modal } from "@operonstudio/ui";
 import {
   useMutation,
   useQueryClient,

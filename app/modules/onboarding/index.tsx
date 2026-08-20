@@ -1,4 +1,4 @@
-import { Box, Button, Input } from "@operon/ui";
+import { Box, Button, Input } from "@operonstudio/ui";
 import type { ReactNode } from "react";
 import { useEffect, useRef, useState } from "react";
 import { useOnboarding } from "./hooks";

@@ -1,6 +1,6 @@
-import { getAuthMiddlewareOptions } from "@operon/auth";
-import { createClient } from "@operon/request";
-import { withLogger, withAuth } from "@operon/request/middleware";
+import { getAuthMiddlewareOptions } from "@operonstudio/auth";
+import { createClient } from "@operonstudio/request";
+import { withLogger, withAuth } from "@operonstudio/request/middleware";
 
 export const operonApiClient = createClient({
   baseURL: import.meta.env.VITE_OPERON_COMPOSE_BACKEND_URL,

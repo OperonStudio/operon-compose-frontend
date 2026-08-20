@@ -1,4 +1,4 @@
-import { Box, Button, Checkbox, Input, Modal } from "@operon/ui";
+import { Box, Button, Checkbox, Input, Modal } from "@operonstudio/ui";
 import type { ContextVariable } from "../../../context-module/api";
 
 interface AttributesModalProps {

@@ -2,7 +2,7 @@ import { getPageContentOptions } from "#/common/api/content-api";
 import type { PageAction } from "#/common/api/interfaces";
 import { resolveIcon } from "#/common/icon-map";
 import { useHeaderActionHandler } from "#/contexts/header-actions";
-import { Box, Button } from "@operon/ui";
+import { Box, Button } from "@operonstudio/ui";
 import { useQuery } from "@tanstack/react-query";
 import { useLocation } from "@tanstack/react-router";
 import * as classes from "./style";

@@ -3,7 +3,7 @@ import {
   createWorkspaceOptions,
   getWorkspacesOptions,
 } from "#/components/workspace-switcher/api";
-import { toast } from "@operon/ui";
+import { toast } from "@operonstudio/ui";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";

@@ -7,14 +7,14 @@ import { Header } from "#/components/header";
 import { WorkspaceSwitcher } from "#/components/workspace-switcher";
 import { useAppTheme } from "#/contexts/theme";
 import { cx } from "@morph-css/kit";
-import { getToken, useAuth } from "@operon/auth";
-import { BarChart3, Code, Database, Moon, Sun } from "@operon/icons";
+import { getToken, useAuth } from "@operonstudio/auth";
+import { BarChart3, Code, Database, Moon, Sun } from "@operonstudio/icons";
 import {
   AppShell,
   type AppShellNavGroup,
   type AppShellProduct,
   Toggle,
-} from "@operon/ui";
+} from "@operonstudio/ui";
 import { useQuery } from "@tanstack/react-query";
 import { Link, useLocation } from "@tanstack/react-router";
 import * as classes from "./style";

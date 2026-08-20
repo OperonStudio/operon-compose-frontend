@@ -1,5 +1,5 @@
 import { getActiveIds } from "#/libs/utils";
-import { useAuth } from "@operon/auth";
+import { useAuth } from "@operonstudio/auth";
 import {
   Activity,
   ArrowUpRight,
@@ -10,8 +10,8 @@ import {
   Layers,
   Plus,
   Zap,
-} from "@operon/icons";
-import { Box, Button } from "@operon/ui";
+} from "@operonstudio/icons";
+import { Box, Button } from "@operonstudio/ui";
 import { Link } from "@tanstack/react-router";
 import { useDashboard } from "./hooks";
 import * as classes from "./style";

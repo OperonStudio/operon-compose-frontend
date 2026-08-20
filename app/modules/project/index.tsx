@@ -1,7 +1,7 @@
 import { getPageContentOptions } from "#/common/api/content-api";
 import { ConfirmModal } from "#/components/confirm-modal";
 import { useHeaderActions } from "#/contexts/header-actions";
-import { Box, Button } from "@operon/ui";
+import { Box, Button } from "@operonstudio/ui";
 import {
   useMutation,
   useQueryClient,

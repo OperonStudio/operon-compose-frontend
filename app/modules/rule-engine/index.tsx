@@ -1,7 +1,7 @@
 import { getProjectsOptions } from "#/modules/project/api";
 import { getCollectionsOptions } from "#/modules/project/projectId/api";
-import { ChevronDown, ChevronRight } from "@operon/icons";
-import { Box } from "@operon/ui";
+import { ChevronDown, ChevronRight } from "@operonstudio/icons";
+import { Box } from "@operonstudio/ui";
 import { useQuery } from "@tanstack/react-query";
 import { Link, Outlet, useParams } from "@tanstack/react-router";
 import { useState } from "react";

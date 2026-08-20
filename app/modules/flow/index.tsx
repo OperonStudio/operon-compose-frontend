@@ -9,8 +9,8 @@ import {
   FolderKanban,
   GitBranch,
   User,
-} from "@operon/icons";
-import { Box, Button, Dropdown, FlowBoard } from "@operon/ui";
+} from "@operonstudio/icons";
+import { Box, Button, Dropdown, FlowBoard } from "@operonstudio/ui";
 import { useQuery, useSuspenseQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import * as classes from "./style";

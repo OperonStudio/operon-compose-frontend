@@ -1,7 +1,7 @@
 import { getActiveIds } from "#/libs/utils";
-import { useAuth } from "@operon/auth";
-import { Check, Copy, Mail, Plus, ShieldCheck as Shield, Trash2, User as Users } from "@operon/icons";
-import { Box, Button, Chip, Dropdown, Input, Modal, toast } from "@operon/ui";
+import { useAuth } from "@operonstudio/auth";
+import { Check, Copy, Mail, Plus, ShieldCheck as Shield, Trash2, User as Users } from "@operonstudio/icons";
+import { Box, Button, Chip, Dropdown, Input, Modal, toast } from "@operonstudio/ui";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import {

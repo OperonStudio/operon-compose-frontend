@@ -44,7 +44,7 @@ export const ProjectPage = () => {
     getPageContentOptions("projects"),
   );
 
-  const emptyState = pageData.content.emptyState;
+  const emptyState = pageData?.content?.emptyState;
   const modals = pageData.modals;
 
   const createProject = useMutation({

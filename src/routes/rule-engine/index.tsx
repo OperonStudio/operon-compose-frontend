@@ -13,7 +13,7 @@ function RuleEngineIndex() {
   const { data: pageData } = useSuspenseQuery(
     getPageContentOptions("rule-engine"),
   );
-  const emptyState = pageData.content.emptyState;
+  const emptyState = pageData?.content?.emptyState;
 
   return (
     <Box

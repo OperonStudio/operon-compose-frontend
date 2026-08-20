@@ -19,8 +19,8 @@ export const FlowPage = () => {
   const { data: projects } = useQuery(getProjectsOptions);
   const { data: pageData } = useSuspenseQuery(getPageContentOptions("flow"));
 
-  const labels = pageData.content.labels;
-  const emptyState = pageData.content.emptyState;
+  const labels = pageData?.content?.labels;
+  const emptyState = pageData?.content?.emptyState;
   const EmptyStateIcon = resolveIcon(emptyState?.icon);
 
   const [selectedProjectId, setSelectedProjectId] = useState<string>("");

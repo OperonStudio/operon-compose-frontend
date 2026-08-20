@@ -141,7 +141,7 @@ export const ContextPage = () => {
   const queryClient = useQueryClient();
   const { data: variables = [] } = useSuspenseQuery(getContextsOptions);
   const { data: pageData } = useSuspenseQuery(getPageContentOptions("context"));
-  const typeOptions = (pageData.content.typeOptions as any[]) ?? [
+  const typeOptions = (pageData?.content?.typeOptions as any[]) ?? [
     { value: "string", label: "String" },
     { value: "number", label: "Number" },
     { value: "boolean", label: "Boolean" },

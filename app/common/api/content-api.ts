@@ -6,13 +6,19 @@ const CONTENT_STALE_TIME = 5 * 60 * 1000;
 
 export const appConfigContentOptions = queryOptions({
   queryKey: ["content", "app-config"],
-  queryFn: () => fetchContent({ data: "app-config" }) as Promise<AppConfig>,
+  queryFn: async () => {
+    const res = await fetchContent({ data: "app-config" });
+    return (res ?? {}) as AppConfig;
+  },
   staleTime: CONTENT_STALE_TIME,
 });
 
 export const sidebarContentOptions = queryOptions({
   queryKey: ["content", "sidebar"],
-  queryFn: () => fetchContent({ data: "sidebar" }) as Promise<SidebarContent>,
+  queryFn: async () => {
+    const res = await fetchContent({ data: "sidebar" });
+    return (res ?? {}) as SidebarContent;
+  },
   staleTime: CONTENT_STALE_TIME,
 });
 
@@ -20,12 +26,8 @@ export const getPageContentOptions = (collectionId: string) =>
   queryOptions({
     queryKey: ["content", collectionId],
     queryFn: async () => {
-      // if (collectionId === "project-details") {
-      //   const { ProjectDetailsPage } = await import("../static-data");
-      //   return ProjectDetailsPage;
-      // }
-      return fetchContent({ data: collectionId }) as Promise<PageContent>;
+      const res = await fetchContent({ data: collectionId });
+      return (res ?? { id: collectionId, title: "", description: "", content: {} }) as PageContent;
     },
-    // staleTime: CONTENT_STALE_TIME,
     enabled: Boolean(collectionId),
   });

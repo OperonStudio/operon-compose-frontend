@@ -34,7 +34,7 @@ export const EnvironmentsPage = () => {
     getPageContentOptions("environments"),
   );
 
-  const emptyState = pageData.content.emptyState;
+  const emptyState = pageData?.content?.emptyState;
   const modals = pageData.modals;
   const EmptyStateIcon = resolveIcon(emptyState?.icon);
 

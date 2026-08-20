@@ -25,7 +25,7 @@ export const ApiKeysPage = () => {
   const { data: pageData } = useSuspenseQuery(
     getPageContentOptions("api-keys"),
   );
-  const labels = pageData.content.labels;
+  const labels = pageData?.content?.labels;
   const modals = pageData.modals;
 
   const { mutate: regenerateApiKey, isPending } = useMutation({

@@ -1,7 +1,7 @@
 import { TopProgressBar } from "#/components/top-progress-bar";
 import { OnboardingGate } from "#/modules/onboarding";
 import TanStackQueryDevtools from "@/integrations/tanstack-query/devtools";
-import { AuthGate, AuthProvider, extractTokenFromURL } from "@operonstudio/auth";
+import { AuthGate, AuthProvider, clearToken, extractTokenFromURL } from "@operonstudio/auth";
 import { ThemeProvider, Toaster } from "@operonstudio/ui";
 import { TanStackDevtools } from "@tanstack/react-devtools";
 import { HeadContent, Scripts } from "@tanstack/react-router";
@@ -11,9 +11,22 @@ import { Dashboard } from "./dashboard/index";
 const HOMEPAGE_URL =
   import.meta.env.VITE_HOMEPAGE_URL ?? "https://operonstudio.tech";
 
-// Extract token synchronously before TanStack Router mounts and strips it
+// Handle token extraction and cross-domain logout synchronization
 if (typeof window !== "undefined") {
-  extractTokenFromURL();
+  const urlParams = new URLSearchParams(window.location.search);
+  if (urlParams.has("logout") || urlParams.has("clear")) {
+    clearToken();
+    urlParams.delete("logout");
+    urlParams.delete("clear");
+    const newSearch = urlParams.toString();
+    const newUrl =
+      window.location.pathname +
+      (newSearch ? `?${newSearch}` : "") +
+      window.location.hash;
+    window.history.replaceState({}, "", newUrl);
+  } else {
+    extractTokenFromURL();
+  }
 }
 
 export const RootDocument = ({ children }: { children: React.ReactNode }) => {

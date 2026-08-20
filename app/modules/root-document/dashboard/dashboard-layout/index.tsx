@@ -170,7 +170,7 @@ export const DashboardLayout = ({
       }
       onSignOut={() =>
         logout("/api/auth/logout").then(() => {
-          window.location.href = HOMEPAGE_URL;
+          window.location.href = `${HOMEPAGE_URL}?logout=true`;
         })
       }
       onSwitchProduct={(product: AppShellProduct) => {

@@ -9,6 +9,10 @@ import { HeadContent, Scripts } from "@tanstack/react-router";
 import { TanStackRouterDevtoolsPanel } from "@tanstack/react-router-devtools";
 import { Dashboard } from "./dashboard/index";
 
+const ENABLE_URL_TOKEN_BRIDGE =
+  import.meta.env.VITE_ENABLE_URL_TOKEN_BRIDGE === "true" ||
+  import.meta.env.DEV;
+
 const HOMEPAGE_URL =
   import.meta.env.VITE_HOMEPAGE_URL ?? "https://operonstudio.tech";
 
@@ -24,7 +28,10 @@ export const RootDocument = ({ children }: { children: React.ReactNode }) => {
         <HeadContent />
       </head>
       <body>
-        <AuthProvider refreshUrl="/api/auth/refresh">
+        <AuthProvider
+          refreshUrl="/api/auth/refresh"
+          enableUrlTokenBridge={ENABLE_URL_TOKEN_BRIDGE}
+        >
           <AppThemeProvider>
             <AuthGate homepageUrl={HOMEPAGE_URL}>
               <TopProgressBar />

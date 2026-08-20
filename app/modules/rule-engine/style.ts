@@ -7,6 +7,9 @@ export const pageContainerStyle = css({
   minHeight: "calc(100vh - 140px)",
   backgroundColor: "var(--operon-color-background, #fdfdfc)",
   borderTop: "1px solid var(--operon-color-border, #c7c7e6)",
+  "@media (max-width: 768px)": {
+    flexDirection: "column",
+  },
 });
 
 export const sidebarStyle = css({
@@ -17,6 +20,12 @@ export const sidebarStyle = css({
   display: "flex",
   flexDirection: "column",
   padding: "24px 16px",
+  "@media (max-width: 768px)": {
+    width: "100%",
+    borderRight: "none",
+    borderBottom: "1px solid var(--operon-color-border, #c7c7e6)",
+    padding: "16px",
+  },
 });
 
 export const sidebarTitleStyle = css({
@@ -87,4 +96,7 @@ export const contentAreaStyle = css({
   padding: "48px",
   display: "flex",
   flexDirection: "column",
+  "@media (max-width: 768px)": {
+    padding: "16px",
+  },
 });

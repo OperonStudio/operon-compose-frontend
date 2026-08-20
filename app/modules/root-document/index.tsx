@@ -9,8 +9,6 @@ import { HeadContent, Scripts } from "@tanstack/react-router";
 import { TanStackRouterDevtoolsPanel } from "@tanstack/react-router-devtools";
 import { Dashboard } from "./dashboard/index";
 
-const AUTH_API_URL =
-  import.meta.env.VITE_OPERON_AUTH_API_URL ?? "http://localhost:8081";
 const HOMEPAGE_URL =
   import.meta.env.VITE_HOMEPAGE_URL ?? "https://operonstudio.tech";
 
@@ -26,7 +24,7 @@ export const RootDocument = ({ children }: { children: React.ReactNode }) => {
         <HeadContent />
       </head>
       <body>
-        <AuthProvider refreshUrl={`${AUTH_API_URL}/api/auth/refresh`}>
+        <AuthProvider refreshUrl="/api/auth/refresh">
           <AppThemeProvider>
             <AuthGate homepageUrl={HOMEPAGE_URL}>
               <TopProgressBar />

@@ -27,8 +27,6 @@ const CODEBLOCKS_URL =
   import.meta.env.VITE_CODEBLOCKS_URL ?? "http://localhost:4002";
 const ANALYTICS_URL =
   import.meta.env.VITE_ANALYTICS_URL ?? "http://localhost:4003";
-const AUTH_API_URL =
-  import.meta.env.VITE_OPERON_AUTH_API_URL ?? "http://localhost:8081";
 
 const PRODUCTS: AppShellProduct[] = [
   {
@@ -171,7 +169,7 @@ export const DashboardLayout = ({
           : undefined
       }
       onSignOut={() =>
-        logout(`${AUTH_API_URL}/api/auth/logout`).then(() => {
+        logout("/api/auth/logout").then(() => {
           window.location.href = HOMEPAGE_URL;
         })
       }

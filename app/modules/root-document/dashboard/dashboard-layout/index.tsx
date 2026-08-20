@@ -168,11 +168,10 @@ export const DashboardLayout = ({
           ? { name: user.name || user.email || "Signed in", email: user.email }
           : undefined
       }
-      onSignOut={() =>
-        logout("/api/auth/logout").then(() => {
-          window.location.href = `${HOMEPAGE_URL}?logout=true`;
-        })
-      }
+      onSignOut={async () => {
+        await logout("/api/auth/logout");
+        window.location.href = HOMEPAGE_URL;
+      }}
       onSwitchProduct={(product: AppShellProduct) => {
         window.location.href = bridgeToken(product.url);
         return true;

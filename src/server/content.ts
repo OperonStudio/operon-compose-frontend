@@ -18,7 +18,8 @@ export const fetchContent = createServerFn({
     const backendUrl =
       process.env.OPERON_COMPOSE_BACKEND_URL ??
       process.env.VITE_OPERON_COMPOSE_BACKEND_URL ??
-      import.meta.env.VITE_OPERON_COMPOSE_BACKEND_URL;
+      import.meta.env.VITE_OPERON_COMPOSE_BACKEND_URL ??
+      "https://operon-compose-backend.onrender.com";
 
     if (!backendUrl) {
       console.warn("[fetchContent] OPERON_COMPOSE_BACKEND_URL is not configured");

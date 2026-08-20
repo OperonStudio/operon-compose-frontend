@@ -3,7 +3,9 @@ import { createClient } from "@operonstudio/request";
 import { withLogger, withAuth } from "@operonstudio/request/middleware";
 
 export const operonApiClient = createClient({
-  baseURL: import.meta.env.VITE_OPERON_COMPOSE_BACKEND_URL,
+  baseURL:
+    import.meta.env.VITE_OPERON_COMPOSE_BACKEND_URL ??
+    "https://operon-compose-backend.onrender.com",
 });
 
 operonApiClient.use(async (ctx, next) => {

@@ -96,7 +96,9 @@ export const ProjectIdPage = () => {
     const apiKey = apiKeysForThisProject.find(
       (k) => k.environment === environmentId || (k as any).environmentId === environmentId,
     );
-    const baseUrl = import.meta.env.VITE_OPERON_COMPOSE_BACKEND_URL;
+    const baseUrl =
+      import.meta.env.VITE_OPERON_COMPOSE_BACKEND_URL ??
+      "https://operon-compose-backend.onrender.com";
     let url = `${baseUrl}/api/content/${projectId}/${activeCollection.id}?environmentId=${environmentId}`;
     if (apiKey) {
       url += `&x-Operon-key=${apiKey.value}`;

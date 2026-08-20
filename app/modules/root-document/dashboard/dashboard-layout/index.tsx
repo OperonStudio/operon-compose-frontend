@@ -5,7 +5,6 @@ import {
 import { resolveIcon } from "#/common/icon-map";
 import { Header } from "#/components/header";
 import { WorkspaceSwitcher } from "#/components/workspace-switcher";
-import { useAppTheme } from "#/contexts/theme";
 import { cx } from "@morph-css/kit";
 import { getToken, useAuth } from "@operonstudio/auth";
 import { BarChart3, Code, Database, Moon, Sun } from "@operonstudio/icons";
@@ -14,6 +13,7 @@ import {
   type AppShellNavGroup,
   type AppShellProduct,
   Toggle,
+  useTheme,
 } from "@operonstudio/ui";
 import { useQuery } from "@tanstack/react-query";
 import { Link, useLocation } from "@tanstack/react-router";
@@ -71,7 +71,7 @@ export const DashboardLayout = ({
   children: React.ReactNode;
 }) => {
   const location = useLocation();
-  const { isDark, toggleTheme } = useAppTheme();
+  const { isDark, toggleTheme } = useTheme();
   const { user, logout } = useAuth();
 
   const { data: sidebarData } = useQuery(sidebarContentOptions);

@@ -3,7 +3,11 @@ import {
   sidebarContentOptions,
 } from "#/common/api/content-api";
 import { resolveIcon } from "#/common/icon-map";
-import { Header } from "#/components/header";
+import {
+  Header,
+  MobileEnvironmentSelector,
+  SubHeaderBreadcrumbs,
+} from "#/components/header";
 import { WorkspaceSwitcher } from "#/components/workspace-switcher";
 import { cx } from "@morph-css/kit";
 import { getToken, useAuth } from "@operonstudio/auth";
@@ -145,9 +149,16 @@ export const DashboardLayout = ({
     <AppShell
       productKey="compose"
       products={PRODUCTS}
+      homepageUrl={bridgeToken(HOMEPAGE_URL)}
       navGroups={navGroups}
-      sidebarHeader={<WorkspaceSwitcher />}
+      sidebarHeader={
+        <div style={{ width: "100%" }}>
+          <WorkspaceSwitcher />
+          <MobileEnvironmentSelector />
+        </div>
+      }
       topbarStart={<Header />}
+      subHeader={<SubHeaderBreadcrumbs />}
       sidebarFooter={
         <>
           <div>

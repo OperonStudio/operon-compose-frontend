@@ -6,6 +6,9 @@ export const containerStyle = css({
   padding: "10px 12px",
   borderBottom: "1px solid var(--operon-color-border, #e5e7eb)",
   marginBottom: "4px",
+  width: "100%",
+  flex: 1,
+  boxSizing: "border-box",
 });
 
 export const triggerBoxStyle = css({

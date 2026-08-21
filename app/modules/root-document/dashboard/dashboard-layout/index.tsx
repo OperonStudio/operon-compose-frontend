@@ -24,9 +24,9 @@ const HOMEPAGE_URL =
 const COMPOSE_URL =
   import.meta.env.VITE_COMPOSE_URL ?? "https://compose.operonstudio.tech";
 const CODEBLOCKS_URL =
-  import.meta.env.VITE_CODEBLOCKS_URL ?? "http://localhost:4002";
+  import.meta.env.VITE_CODEBLOCKS_URL ?? "https://codeblocks.operonstudio.tech";
 const ANALYTICS_URL =
-  import.meta.env.VITE_ANALYTICS_URL ?? "http://localhost:4003";
+  import.meta.env.VITE_ANALYTICS_URL ?? "https://analytics.operonstudio.tech";
 
 const PRODUCTS: AppShellProduct[] = [
   {

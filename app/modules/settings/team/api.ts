@@ -19,6 +19,24 @@ export interface CreateInvitationInput {
   role: string;
 }
 
+export interface Workspace {
+  id: string;
+  name: string;
+  createdBy: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export const getWorkspaceOptions = (workspaceId?: string) =>
+  queryOptions({
+    queryKey: ["workspace", workspaceId],
+    queryFn: async () => {
+      if (!workspaceId) return null;
+      return await operonApiClient.get<Workspace>(`/api/workspaces/${workspaceId}`);
+    },
+    enabled: !!workspaceId,
+  });
+
 export const getInvitationsOptions = () =>
   queryOptions({
     queryKey: ["invitations"],
@@ -30,6 +48,7 @@ export const getInvitationsOptions = () =>
       );
     },
   });
+
 
 export const createInvitationOptions = {
   mutationFn: async (data: CreateInvitationInput) => {
@@ -49,3 +68,10 @@ export const revokeInvitationOptions = {
     );
   },
 };
+
+export const acceptInvitationOptions = {
+  mutationFn: async (token: string) => {
+    return await operonApiClient.post("/api/invitations/accept", { token });
+  },
+};
+

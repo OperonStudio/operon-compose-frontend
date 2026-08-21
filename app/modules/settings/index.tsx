@@ -1,12 +1,15 @@
 import { getActiveIds } from "#/libs/utils";
 import { useAuth } from "@operonstudio/auth";
-import { Check, Copy, Mail, Plus, ShieldCheck as Shield, Trash2, User as Users } from "@operonstudio/icons";
-import { Box, Button, Chip, Dropdown, Input, Modal, toast } from "@operonstudio/ui";
+import { Check, Copy, Mail, Plus, Trash2 } from "@operonstudio/icons";
+import { Box, Button, Chip, Dropdown, Input, Modal, Tabs, toast } from "@operonstudio/ui";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import * as classes from "./style";
 import {
+  acceptInvitationOptions,
   createInvitationOptions,
   getInvitationsOptions,
+  getWorkspaceOptions,
   revokeInvitationOptions,
 } from "./team/api";
 
@@ -15,13 +18,34 @@ export const SettingsPage = () => {
   const { workspaceId } = getActiveIds();
   const queryClient = useQueryClient();
 
-  const [activeTab, setActiveTab] = useState<"team" | "general">("team");
   const [isInviteModalOpen, setIsInviteModalOpen] = useState(false);
   const [inviteEmail, setInviteEmail] = useState("");
   const [inviteRole, setInviteRole] = useState("editor");
   const [copiedId, setCopiedId] = useState(false);
 
+  const { data: workspace } = useQuery(getWorkspaceOptions(workspaceId));
   const { data: invitations = [] } = useQuery(getInvitationsOptions());
+
+  const acceptInviteMutation = useMutation({
+    ...acceptInvitationOptions,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["invitations"] });
+      queryClient.invalidateQueries({ queryKey: ["workspace"] });
+      toast.success("Successfully joined workspace!");
+      window.history.replaceState({}, document.title, window.location.pathname);
+    },
+    onError: (err: any) => {
+      toast.error(err.message || "Failed to accept invitation.");
+    },
+  });
+
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const token = urlParams.get("token");
+    if (token) {
+      acceptInviteMutation.mutate(token);
+    }
+  }, []);
 
   const createInviteMutation = useMutation({
     ...createInvitationOptions,
@@ -35,6 +59,7 @@ export const SettingsPage = () => {
       toast.error(err.message || "Failed to send invitation.");
     },
   });
+
 
   const revokeInviteMutation = useMutation({
     ...revokeInvitationOptions,
@@ -64,347 +89,245 @@ export const SettingsPage = () => {
     }
   };
 
-  // Mock workspace team members list (combined with active user)
-  const teamMembers = [
-    {
-      id: user?.id || "u1",
-      name: user?.name || "Workspace Owner",
-      email: user?.email || "owner@operon.io",
-      role: "Owner",
-      status: "Active",
-      isCurrentUser: true,
-    },
-    {
-      id: "u2",
-      name: "Dev Lead",
-      email: "dev@company.com",
-      role: "Editor",
-      status: "Active",
-      isCurrentUser: false,
-    },
-  ];
+  // Dynamically compute active workspace member list from authenticated user
+  const teamMembers = user
+    ? [
+        {
+          id: user.id || "current-user",
+          name: user.name || (user.email ? user.email.split("@")[0] : "Workspace Owner"),
+          email: user.email || "owner@operon.io",
+          role: "Owner",
+          status: "Active",
+          isCurrentUser: true,
+        },
+      ]
+    : [];
 
   return (
-    <Box
-      style={{
-        padding: "32px 40px 64px",
-        maxWidth: "1100px",
-        margin: "0 auto",
-        width: "100%",
-        display: "flex",
-        flexDirection: "column",
-        gap: "28px",
-      }}
-    >
+    <Box {...classes.containerStyle}>
       {/* ── Header ── */}
-      <Box display="flex" justify="space-between" align="center">
-        <Box display="flex" direction="column" gap="4px">
-          <Box
-            style={{
-              fontSize: "24px",
-              fontWeight: 700,
-              color: "var(--operon-color-text)",
-              letterSpacing: "-0.02em",
-            }}
-          >
-            Workspace Settings
-          </Box>
-          <Box
-            style={{
-              fontSize: "14px",
-              color: "var(--operon-color-text-muted)",
-            }}
-          >
+      <Box {...classes.headerStyle}>
+        <Box {...classes.headerTextStyle}>
+          <Box {...classes.headerTitleStyle}>Workspace Settings</Box>
+          <Box {...classes.headerSubtitleStyle}>
             Manage team members, permissions, and workspace configuration
           </Box>
         </Box>
-        {activeTab === "team" && (
-          <Button
-            variant="primary"
-            onClick={() => setIsInviteModalOpen(true)}
-            style={{ gap: "6px" }}
-          >
-            <Plus size={16} /> Invite Member
-          </Button>
-        )}
-      </Box>
-
-      {/* ── Nav Tabs ── */}
-      <Box
-        display="flex"
-        gap="8px"
-        style={{
-          borderBottom: "1px solid var(--operon-color-border)",
-          paddingBottom: "12px",
-        }}
-      >
         <Button
-          variant={activeTab === "team" ? "primary" : "ghost"}
-          onClick={() => setActiveTab("team")}
-          style={{ gap: "8px", fontWeight: 600 }}
+          variant="primary"
+          onClick={() => setIsInviteModalOpen(true)}
+          style={{ gap: "6px" }}
         >
-          <Users size={16} /> Team & Access
-        </Button>
-        <Button
-          variant={activeTab === "general" ? "primary" : "ghost"}
-          onClick={() => setActiveTab("general")}
-          style={{ gap: "8px", fontWeight: 600 }}
-        >
-          <Shield size={16} /> General Settings
+          <Plus size={16} /> Invite Member
         </Button>
       </Box>
 
-      {/* ── Team Tab Content ── */}
-      {activeTab === "team" && (
-        <Box display="flex" direction="column" gap="24px">
-          {/* Members Table */}
-          <Box
-            style={{
-              background: "var(--operon-color-surface)",
-              border: "1px solid var(--operon-color-border)",
-              borderRadius: "var(--operon-radius-lg, 8px)",
-              overflow: "hidden",
-            }}
-          >
-            <Box
-              style={{
-                padding: "16px 20px",
-                borderBottom: "1px solid var(--operon-color-border)",
-                fontWeight: 700,
-                fontSize: "14px",
-                color: "var(--operon-color-text)",
-              }}
-            >
-              Active Workspace Members ({teamMembers.length})
-            </Box>
-
-            <Box display="flex" direction="column">
-              {teamMembers.map((member) => (
-                <Box
-                  key={member.id}
-                  display="flex"
-                  align="center"
-                  justify="space-between"
-                  style={{
-                    padding: "16px 20px",
-                    borderBottom: "1px solid var(--operon-color-border-subtle)",
-                  }}
-                >
-                  <Box display="flex" align="center" gap="14px">
-                    <Box
-                      style={{
-                        width: "36px",
-                        height: "36px",
-                        borderRadius: "50%",
-                        background: "var(--operon-color-primary)",
-                        color: "#fff",
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        fontWeight: 700,
-                        fontSize: "14px",
-                      }}
-                    >
-                      {member.name.charAt(0)}
-                    </Box>
-                    <Box display="flex" direction="column" gap="2px">
-                      <Box
-                        display="flex"
-                        align="center"
-                        gap="8px"
-                        style={{
-                          fontWeight: 600,
-                          fontSize: "14px",
-                          color: "var(--operon-color-text)",
-                        }}
-                      >
-                        {member.name}
-                        {member.isCurrentUser && (
-                          <Chip
-                            variant="subtle"
-                            style={{
-                              fontSize: "10px",
-                              background: "rgba(51, 214, 166, 0.12)",
-                              color: "#0D9A73",
-                              fontWeight: 700,
-                            }}
-                          >
-                            YOU
-                          </Chip>
-                        )}
-                      </Box>
-                      <Box
-                        style={{
-                          fontSize: "13px",
-                          color: "var(--operon-color-text-muted)",
-                        }}
-                      >
-                        {member.email}
-                      </Box>
-                    </Box>
+      {/* ── Settings Tabs ── */}
+      <Tabs
+        style={{ width: "100%" }}
+        tabs={[
+          {
+            label: "Team & Access",
+            content: (
+              <Box style={{ paddingTop: "20px" }} display="flex" direction="column" gap="24px">
+                {/* Members Table */}
+                <Box {...classes.cardStyle}>
+                  <Box {...classes.cardHeaderStyle}>
+                    Active Workspace Members ({teamMembers.length})
                   </Box>
 
-                  <Chip
-                    variant="subtle"
-                    style={{
-                      fontWeight: 600,
-                      fontSize: "12px",
-                      background: "var(--operon-color-surface-sunken)",
-                      color: "var(--operon-color-text)",
-                    }}
-                  >
-                    {member.role}
-                  </Chip>
-                </Box>
-              ))}
-            </Box>
-          </Box>
+                  <Box display="flex" direction="column">
+                    {teamMembers.map((member) => (
+                      <Box key={member.id} {...classes.memberItemStyle}>
+                        <Box {...classes.memberInfoStyle}>
+                          <Box {...classes.avatarStyle}>
+                            {member.name.charAt(0).toUpperCase()}
+                          </Box>
+                          <Box {...classes.memberDetailsStyle}>
+                            <Box {...classes.memberNameStyle}>
+                              {member.name}
+                              {member.isCurrentUser && (
+                                <Chip
+                                  variant="subtle"
+                                  style={{
+                                    fontSize: "10px",
+                                    background: "rgba(51, 214, 166, 0.12)",
+                                    color: "#0D9A73",
+                                    fontWeight: 700,
+                                  }}
+                                >
+                                  YOU
+                                </Chip>
+                              )}
+                            </Box>
+                            <Box {...classes.memberEmailStyle}>
+                              {member.email}
+                            </Box>
+                          </Box>
+                        </Box>
 
-          {/* Pending Invitations */}
-          <Box
-            style={{
-              background: "var(--operon-color-surface)",
-              border: "1px solid var(--operon-color-border)",
-              borderRadius: "var(--operon-radius-lg, 8px)",
-              overflow: "hidden",
-            }}
-          >
-            <Box
-              style={{
-                padding: "16px 20px",
-                borderBottom: "1px solid var(--operon-color-border)",
-                fontWeight: 700,
-                fontSize: "14px",
-                color: "var(--operon-color-text)",
-              }}
-            >
-              Pending Invitations ({invitations.length})
-            </Box>
-
-            {invitations.length === 0 ? (
-              <Box
-                style={{
-                  padding: "32px 20px",
-                  textAlign: "center",
-                  color: "var(--operon-color-text-muted)",
-                  fontSize: "13px",
-                }}
-              >
-                No pending invitations. Invite colleagues to join this
-                workspace.
-              </Box>
-            ) : (
-              <Box display="flex" direction="column">
-                {invitations.map((inv) => (
-                  <Box
-                    key={inv.id}
-                    display="flex"
-                    align="center"
-                    justify="space-between"
-                    style={{
-                      padding: "14px 20px",
-                      borderBottom:
-                        "1px solid var(--operon-color-border-subtle)",
-                    }}
-                  >
-                    <Box display="flex" align="center" gap="12px">
-                      <Mail size={18} color="var(--operon-color-text-muted)" />
-                      <Box display="flex" direction="column" gap="2px">
-                        <Box
+                        <Chip
+                          variant="subtle"
                           style={{
                             fontWeight: 600,
-                            fontSize: "14px",
+                            fontSize: "12px",
+                            background: "var(--operon-color-surface-sunken)",
                             color: "var(--operon-color-text)",
                           }}
                         >
-                          {inv.email}
-                        </Box>
-                        <Box
-                          style={{
-                            fontSize: "11px",
-                            color: "var(--operon-color-text-subtle)",
-                            fontFamily: "var(--operon-typography-mono)",
-                          }}
-                        >
-                          Role: {inv.role} • Status: {inv.status}
-                        </Box>
+                          {member.role}
+                        </Chip>
                       </Box>
+                    ))}
+                  </Box>
+                </Box>
+
+                {/* Pending Invitations */}
+                <Box {...classes.cardStyle}>
+                  <Box {...classes.cardHeaderStyle}>
+                    Pending Invitations ({invitations.length})
+                  </Box>
+
+                  {invitations.length === 0 ? (
+                    <Box
+                      style={{
+                        padding: "32px 20px",
+                        textAlign: "center",
+                        color: "var(--operon-color-text-muted)",
+                        fontSize: "13px",
+                      }}
+                    >
+                      No pending invitations. Invite colleagues to join this
+                      workspace.
+                    </Box>
+                  ) : (
+                    <Box display="flex" direction="column">
+                      {invitations.map((inv) => (
+                        <Box key={inv.id} {...classes.invitationItemStyle}>
+                          <Box display="flex" align="center" gap="12px" style={{ minWidth: 0 }}>
+                            <Mail size={18} color="var(--operon-color-text-muted)" style={{ flexShrink: 0 }} />
+                            <Box display="flex" direction="column" gap="2px" style={{ minWidth: 0 }}>
+                              <Box
+                                style={{
+                                  fontWeight: 600,
+                                  fontSize: "14px",
+                                  color: "var(--operon-color-text)",
+                                  wordBreak: "break-all",
+                                }}
+                              >
+                                {inv.email}
+                              </Box>
+                              <Box
+                                style={{
+                                  fontSize: "11px",
+                                  color: "var(--operon-color-text-subtle)",
+                                  fontFamily: "var(--operon-typography-mono)",
+                                }}
+                              >
+                                Role: {inv.role} • Status: {inv.status}
+                              </Box>
+                            </Box>
+                          </Box>
+
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => revokeInviteMutation.mutate(inv.id)}
+                            style={{ color: "#DC2626", gap: "6px" }}
+                          >
+                            <Trash2 size={14} /> Revoke
+                          </Button>
+                        </Box>
+                      ))}
+                    </Box>
+                  )}
+                </Box>
+              </Box>
+            ),
+          },
+          {
+            label: "General Settings",
+            content: (
+              <Box style={{ paddingTop: "20px" }} display="flex" direction="column" gap="24px">
+                <Box
+                  style={{
+                    background: "var(--operon-color-surface)",
+                    border: "1px solid var(--operon-color-border)",
+                    borderRadius: "var(--operon-radius-lg, 8px)",
+                    padding: "24px",
+                    display: "flex",
+                    flexDirection: "column",
+                    gap: "20px",
+                  }}
+                >
+                  <Box
+                    style={{
+                      fontSize: "14px",
+                      fontWeight: 700,
+                      color: "var(--operon-color-text)",
+                    }}
+                  >
+                    Workspace Identification
+                  </Box>
+
+                  <Box display="flex" direction="column" gap="16px">
+                    <Box>
+                      <label
+                        style={{
+                          display: "block",
+                          fontSize: "12px",
+                          fontWeight: 600,
+                          color: "var(--operon-color-text-muted)",
+                          marginBottom: "6px",
+                        }}
+                      >
+                        Workspace Name
+                      </label>
+                      <Input
+                        value={workspace?.name || "Workspace"}
+                        disabled
+                        style={{ width: "100%" }}
+                      />
                     </Box>
 
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => revokeInviteMutation.mutate(inv.id)}
-                      style={{ color: "#DC2626", gap: "6px" }}
-                    >
-                      <Trash2 size={14} /> Revoke
-                    </Button>
+                    <Box>
+                      <label
+                        style={{
+                          display: "block",
+                          fontSize: "12px",
+                          fontWeight: 600,
+                          color: "var(--operon-color-text-muted)",
+                          marginBottom: "6px",
+                        }}
+                      >
+                        Workspace ID
+                      </label>
+                      <Box {...classes.workspaceIdRowStyle}>
+                        <Input
+                          value={workspaceId || workspace?.id || "default-workspace"}
+                          disabled
+                          style={{
+                            fontFamily: "var(--operon-typography-mono)",
+                            flex: 1,
+                          }}
+                        />
+                        <Button
+                          variant="outline"
+                          onClick={copyWorkspaceId}
+                          style={{ gap: "6px" }}
+                        >
+                          {copiedId ? <Check size={16} /> : <Copy size={16} />}
+                          {copiedId ? "Copied" : "Copy ID"}
+                        </Button>
+                      </Box>
+                    </Box>
                   </Box>
-                ))}
+                </Box>
               </Box>
-            )}
-          </Box>
-        </Box>
-      )}
-
-      {/* ── General Tab Content ── */}
-      {activeTab === "general" && (
-        <Box display="flex" direction="column" gap="24px">
-          <Box
-            style={{
-              background: "var(--operon-color-surface)",
-              border: "1px solid var(--operon-color-border)",
-              borderRadius: "var(--operon-radius-lg, 8px)",
-              padding: "24px",
-              display: "flex",
-              flexDirection: "column",
-              gap: "20px",
-            }}
-          >
-            <Box
-              style={{
-                fontSize: "14px",
-                fontWeight: 700,
-                color: "var(--operon-color-text)",
-              }}
-            >
-              Workspace Identification
-            </Box>
-
-            <Box>
-              <label
-                style={{
-                  display: "block",
-                  fontSize: "12px",
-                  fontWeight: 600,
-                  color: "var(--operon-color-text-muted)",
-                  marginBottom: "6px",
-                }}
-              >
-                Workspace ID
-              </label>
-              <Box display="flex" gap="10px">
-                <Input
-                  value={workspaceId || "default-workspace"}
-                  disabled
-                  style={{
-                    fontFamily: "var(--operon-typography-mono)",
-                    flex: 1,
-                  }}
-                />
-                <Button
-                  variant="outline"
-                  onClick={copyWorkspaceId}
-                  style={{ gap: "6px" }}
-                >
-                  {copiedId ? <Check size={16} /> : <Copy size={16} />}
-                  {copiedId ? "Copied" : "Copy ID"}
-                </Button>
-              </Box>
-            </Box>
-          </Box>
-        </Box>
-      )}
+            ),
+          },
+        ]}
+      />
 
       {/* ── Invite Modal ── */}
       <Modal

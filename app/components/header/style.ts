@@ -1,11 +1,5 @@
 import { css } from "@morph-css/kit";
 
-export const headerWrapperStyle = css({
-  display: "flex",
-  flexDirection: "column",
-  width: "100%",
-});
-
 export const topbarStyle = css({
   display: "flex",
   alignItems: "center",
@@ -20,21 +14,6 @@ export const desktopBreadcrumbStyle = css({
   alignItems: "center",
   "@media (max-width: 900px)": {
     display: "none",
-  },
-});
-
-export const mobileBreadcrumbBarStyle = css({
-  display: "none",
-  "@media (max-width: 900px)": {
-    display: "flex",
-    alignItems: "center",
-    overflowX: "auto",
-    whiteSpace: "nowrap",
-    WebkitOverflowScrolling: "touch",
-    padding: "6px 12px",
-    borderTop: "1px solid var(--operon-color-border-subtle, #f0f0f0)",
-    backgroundColor: "var(--operon-color-surface, #ffffff)",
-    scrollbarWidth: "none",
   },
 });
 
@@ -59,28 +38,6 @@ export const rightActionsStyle = css({
   },
 });
 
-export const shortcutIconStyle = css({
-  opacity: 0.5,
-  fontSize: "12px",
-});
-
 export const iconButtonStyle = css({
   padding: "6px",
-});
-
-export const environmentDesktopStyle = css({
-  display: "flex",
-  alignItems: "center",
-  "@media (max-width: 900px)": {
-    display: "none",
-  },
-});
-
-export const mobileEnvironmentWrapperStyle = css({
-  display: "none",
-  width: "100%",
-  marginTop: "8px",
-  "@media (max-width: 900px)": {
-    display: "block",
-  },
 });

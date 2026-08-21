@@ -248,65 +248,6 @@ export const activityTimeStyle = css({
   fontFamily: "var(--operon-typography-mono)",
 });
 
-// ── Quick Actions Grid ──────────────────────────────────────────────────────
-
-export const quickActionsGridStyle = css({
-  display: "grid",
-  gridTemplateColumns: "repeat(4, 1fr)",
-  gap: "12px",
-  "@media (max-width: 768px)": {
-    gridTemplateColumns: "repeat(2, 1fr)",
-  },
-});
-
-export const quickActionCardStyle = css({
-  display: "flex",
-  alignItems: "center",
-  gap: "12px",
-  padding: "16px 20px",
-  backgroundColor: "var(--operon-color-surface)",
-  border: "1px solid var(--operon-color-border)",
-  borderRadius: "var(--operon-radius-md)",
-  cursor: "pointer",
-  textDecoration: "none",
-  color: "var(--operon-color-text)",
-  transition: "all var(--operon-motion-fast) var(--operon-motion-easing)",
-  "&:hover": {
-    borderColor: "var(--operon-color-primary)",
-    backgroundColor: "var(--operon-color-primary-ghost)",
-    color: "var(--operon-color-primary)",
-  },
-});
-
-export const quickActionIconStyle = css({
-  width: "36px",
-  height: "36px",
-  borderRadius: "var(--operon-radius-sm)",
-  backgroundColor: "var(--operon-color-surface-sunken)",
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "center",
-  color: "var(--operon-color-text-muted)",
-  flexShrink: 0,
-  transition: "color var(--operon-motion-fast) var(--operon-motion-easing)",
-});
-
-export const quickActionLabelStyle = css({
-  fontSize: "13px",
-  fontWeight: 600,
-  letterSpacing: "-0.005em",
-});
-
-// ── Section Header ──────────────────────────────────────────────────────────
-
-export const sectionHeaderStyle = css({
-  fontSize: "11px",
-  fontWeight: 700,
-  textTransform: "uppercase",
-  letterSpacing: "0.08em",
-  color: "var(--operon-color-text-subtle)",
-});
-
 // ── Grid Container (legacy compat) ──────────────────────────────────────────
 
 export const gridContainerStyle = css({

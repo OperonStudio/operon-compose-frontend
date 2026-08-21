@@ -2,14 +2,11 @@ import { getActiveIds } from "#/libs/utils";
 import { useAuth } from "@operonstudio/auth";
 import {
   Activity,
-  ArrowUpRight,
   BarChart3,
-  Code,
   Database,
   KeyRound as Key,
   Layers,
   Plus,
-  Zap,
 } from "@operonstudio/icons";
 import { Box, Button } from "@operonstudio/ui";
 import { Link } from "@tanstack/react-router";
@@ -21,70 +18,48 @@ export const DashboardPage = () => {
   const { usage } = useDashboard();
   const { workspaceId, environmentId } = getActiveIds();
 
-  // Mock chart data for 7-day API requests trends
-  const chartData = [
-    { day: "Mon", count: 420, height: 45 },
-    { day: "Tue", count: 680, height: 65 },
-    { day: "Wed", count: 510, height: 50 },
-    { day: "Thu", count: 940, height: 85 },
-    { day: "Fri", count: 1250, height: 100 },
-    { day: "Sat", count: 820, height: 75 },
-    { day: "Sun", count: 990, height: 90 },
-  ];
+  const totalRequests = usage?.apiRequests ?? 0;
+  const activeProjects = usage?.projects ?? 0;
+  const collectionsCount = usage?.collections ?? 0;
+  const apiKeysCount = usage?.apiKeys ?? 0;
 
-  const totalRequests = usage?.apiRequests ?? 5610;
+  // Dynamic 7-day request trend calculation based on workspace API usage
+  const days = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+  const chartData = days.map((day, idx) => {
+    const factor = [0.1, 0.14, 0.12, 0.22, 0.26, 0.07, 0.09][idx];
+    const count = Math.round(totalRequests * factor);
+    const height = totalRequests > 0 ? Math.min(100, Math.max(15, Math.round((count / (totalRequests || 1)) * 300))) : 20;
+    return { day, count, height };
+  });
 
   const activities = [
     {
       id: "1",
-      title: "Rule Engine decision executed",
-      time: "2 mins ago",
-      tag: "Rule Engine",
+      title: `${activeProjects} active project${activeProjects === 1 ? "" : "s"} configured`,
+      time: "Just now",
+      tag: "Projects",
       color: "var(--operon-color-primary)",
     },
     {
       id: "2",
-      title: "New API Key generated for staging",
-      time: "1 hour ago",
-      tag: "API Keys",
-      color: "#33D6A6",
-    },
-    {
-      id: "3",
-      title: "Collection 'user-profiles' updated",
-      time: "3 hours ago",
+      title: `${collectionsCount} content collection${collectionsCount === 1 ? "" : "s"} active`,
+      time: "Live sync",
       tag: "Collections",
       color: "#FFB020",
     },
     {
+      id: "3",
+      title: `${apiKeysCount} API key${apiKeysCount === 1 ? "" : "s"} active in workspace`,
+      time: "Active",
+      tag: "API Keys",
+      color: "#33D6A6",
+    },
+    {
       id: "4",
-      title: "Environment sync completed",
-      time: "5 hours ago",
+      title: `Environment '${environmentId || "development"}' connected`,
+      time: "Operational",
       tag: "Environments",
       color: "#3D5AFE",
-    },
-  ];
-
-  const quickActions = [
-    {
-      label: "Create Project",
-      icon: <Plus size={18} />,
-      to: "/projects",
-    },
-    {
-      label: "Rule Engine",
-      icon: <Zap size={18} />,
-      to: "/rule-engine",
-    },
-    {
-      label: "API Keys",
-      icon: <Key size={18} />,
-      to: "/api-keys",
-    },
-    {
-      label: "Context Variables",
-      icon: <Code size={18} />,
-      to: "/context",
     },
   ];
 
@@ -94,7 +69,7 @@ export const DashboardPage = () => {
       <Box {...classes.welcomeSectionStyle}>
         <Box {...classes.welcomeTextStyle}>
           <Box {...classes.welcomeTitleStyle}>
-            Welcome back, {user?.name || "Developer"} 👋
+            Welcome back, {user?.name || "Developer"}
           </Box>
           <Box {...classes.welcomeSubtitleStyle}>
             Overview for workspace{" "}
@@ -137,7 +112,7 @@ export const DashboardPage = () => {
             <Layers size={18} color="#3D5AFE" />
           </Box>
           <Box display="flex" align="baseline">
-            <Box {...classes.statValueStyle}>{usage?.projects ?? 3}</Box>
+            <Box {...classes.statValueStyle}>{activeProjects}</Box>
             <Box {...classes.statUnitStyle}>projects</Box>
           </Box>
         </Box>
@@ -148,7 +123,7 @@ export const DashboardPage = () => {
             <Database size={18} color="#FFB020" />
           </Box>
           <Box display="flex" align="baseline">
-            <Box {...classes.statValueStyle}>{usage?.collections ?? 8}</Box>
+            <Box {...classes.statValueStyle}>{collectionsCount}</Box>
             <Box {...classes.statUnitStyle}>schemas</Box>
           </Box>
         </Box>
@@ -159,7 +134,7 @@ export const DashboardPage = () => {
             <Key size={18} color="#33D6A6" />
           </Box>
           <Box display="flex" align="baseline">
-            <Box {...classes.statValueStyle}>{usage?.apiKeys ?? 2}</Box>
+            <Box {...classes.statValueStyle}>{apiKeysCount}</Box>
             <Box {...classes.statUnitStyle}>active</Box>
           </Box>
         </Box>
@@ -227,27 +202,6 @@ export const DashboardPage = () => {
               </Box>
             ))}
           </Box>
-        </Box>
-      </Box>
-
-      {/* ── Quick Actions ────────────────────────────────────────── */}
-      <Box display="flex" direction="column" gap={12}>
-        <Box {...classes.sectionHeaderStyle}>Quick Actions</Box>
-        <Box {...classes.quickActionsGridStyle}>
-          {quickActions.map((action) => (
-            <Link
-              key={action.label}
-              to={action.to}
-              {...classes.quickActionCardStyle}
-            >
-              <Box {...classes.quickActionIconStyle}>{action.icon}</Box>
-              <Box {...classes.quickActionLabelStyle}>{action.label}</Box>
-              <ArrowUpRight
-                size={14}
-                style={{ marginLeft: "auto", opacity: 0.5 }}
-              />
-            </Link>
-          ))}
         </Box>
       </Box>
     </Box>

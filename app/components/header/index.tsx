@@ -1,6 +1,6 @@
 import { cx } from "@morph-css/kit";
 import { Bell, Check, ChevronDown, Search } from "@operonstudio/icons";
-import { Box, Breadcrumb, Button, Dropdown, Input } from "@operonstudio/ui";
+import { Box, Breadcrumb, Button, Input } from "@operonstudio/ui";
 import React, { useEffect, useRef, useState } from "react";
 import * as wsClasses from "../workspace-switcher/style";
 import { useHeader } from "./hooks";
@@ -11,9 +11,6 @@ export function Header() {
     breadcrumbItems,
     isSearchable,
     searchBarPlaceholder,
-    environments,
-    activeEnvironment,
-    switchEnvironment,
   } = useHeader();
 
   return (
@@ -34,29 +31,6 @@ export function Header() {
       )}
 
       <Box className={classes.rightActionsStyle.className}>
-        <Box className={classes.environmentDesktopStyle.className}>
-          <Dropdown
-            trigger={
-              <Button
-                variant="outline"
-                size="sm"
-                disabled={environments.length === 0}
-                style={{ whiteSpace: "nowrap" }}
-              >
-                <Box display="flex" align="center" gap={6}>
-                  {activeEnvironment ? activeEnvironment.name : "No Environment"}
-                  <ChevronDown size={14} />
-                </Box>
-              </Button>
-            }
-            onSelect={(val) => switchEnvironment(val)}
-            items={environments.map((env) => ({
-              value: env.id,
-              label: env.name,
-            }))}
-          />
-        </Box>
-
         <Button variant="ghost" size="sm" {...classes.iconButtonStyle} rounded>
           <Bell size={16} color="var(--operon-color-text-muted)" />
         </Button>

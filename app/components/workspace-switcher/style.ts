@@ -61,6 +61,11 @@ export const listContainerStyle = css({
   maxHeight: "200px",
   overflowY: "auto",
   padding: "6px",
+  scrollbarWidth: "none",
+  msOverflowStyle: "none",
+  "&::-webkit-scrollbar": {
+    display: "none",
+  },
 });
 
 export const listItemStyle = css({

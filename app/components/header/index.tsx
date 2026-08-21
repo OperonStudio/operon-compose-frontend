@@ -86,16 +86,14 @@ export function MobileEnvironmentSelector() {
   if (environments.length === 0) return null;
 
   return (
-    <Box className={classes.mobileEnvironmentWrapperStyle.className}>
-      <Box
-        ref={dropdownRef}
-        className={wsClasses.containerStyle.className}
-        style={{
-          ...wsClasses.containerStyle.style,
-          zIndex: isOpen ? 1000 : 90,
-          borderBottom: "none",
-        }}
-      >
+    <Box
+      ref={dropdownRef}
+      className={wsClasses.containerStyle.className}
+      style={{
+        ...wsClasses.containerStyle.style,
+        zIndex: isOpen ? 1000 : 90,
+      }}
+    >
         {/* Trigger button */}
         <Box
           onClick={() => setIsOpen(!isOpen)}
@@ -173,9 +171,6 @@ export function MobileEnvironmentSelector() {
                       }
                     }}
                   >
-                    <Box {...wsClasses.listItemIconBoxStyle}>
-                      {env.name.charAt(0).toUpperCase()}
-                    </Box>
                     <Box {...wsClasses.listItemTextStyle}>{env.name}</Box>
                     {isActive && (
                       <Check size={13} color="var(--operon-color-primary)" />
@@ -187,7 +182,6 @@ export function MobileEnvironmentSelector() {
           </Box>
         )}
       </Box>
-    </Box>
   );
 }
 

@@ -138,9 +138,6 @@ export const WorkspaceSwitcher = ({
                     }
                   }}
                 >
-                  <Box {...classes.listItemIconBoxStyle}>
-                    {ws.name.charAt(0).toUpperCase()}
-                  </Box>
                   <Box {...classes.listItemTextStyle}>{ws.name}</Box>
                   {isActive && (
                     <Check size={13} color="var(--operon-color-primary)" />
@@ -182,20 +179,16 @@ export const WorkspaceSwitcher = ({
               </Button>
             </Box>
           ) : (
-            <Box
-              onClick={() => setIsCreating(true)}
-              {...classes.createButtonStyle}
-              onMouseEnter={(e: React.MouseEvent<HTMLDivElement>) => {
-                (e.currentTarget as HTMLDivElement).style.color = classes
-                  .createButtonHoverStyle.style?.color as string;
-              }}
-              onMouseLeave={(e: React.MouseEvent<HTMLDivElement>) => {
-                (e.currentTarget as HTMLDivElement).style.color =
-                  "var(--operon-color-text-muted)";
-              }}
-            >
-              <Plus size={14} />
-              New workspace
+            <Box style={{ padding: "4px 6px" }}>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setIsCreating(true)}
+                style={{ width: "100%", justifyContent: "flex-start", gap: 8 }}
+              >
+                <Plus size={14} />
+                New workspace
+              </Button>
             </Box>
           )}
         </Box>

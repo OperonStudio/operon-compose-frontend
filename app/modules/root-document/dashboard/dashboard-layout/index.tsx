@@ -5,10 +5,9 @@ import {
 import { resolveIcon } from "#/common/icon-map";
 import {
   Header,
-  MobileEnvironmentSelector,
   SubHeaderBreadcrumbs,
 } from "#/components/header";
-import { WorkspaceSwitcher } from "#/components/workspace-switcher";
+import { SidebarHeaderControl } from "#/components/sidebar-header-control";
 import { cx } from "@morph-css/kit";
 import { getToken, useAuth } from "@operonstudio/auth";
 import { BarChart3, Code, Database, Moon, Sun } from "@operonstudio/icons";
@@ -151,12 +150,7 @@ export const DashboardLayout = ({
       products={PRODUCTS}
       homepageUrl={bridgeToken(HOMEPAGE_URL)}
       navGroups={navGroups}
-      sidebarHeader={
-        <div style={{ width: "100%" }}>
-          <WorkspaceSwitcher />
-          <MobileEnvironmentSelector />
-        </div>
-      }
+      sidebarHeader={<SidebarHeaderControl />}
       topbarStart={<Header />}
       subHeader={<SubHeaderBreadcrumbs />}
       sidebarFooter={

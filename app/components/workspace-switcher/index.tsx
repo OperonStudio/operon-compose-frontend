@@ -48,7 +48,14 @@ export const WorkspaceSwitcher = ({
   }
 
   return (
-    <Box ref={dropdownRef} {...classes.containerStyle}>
+    <Box
+      ref={dropdownRef}
+      className={classes.containerStyle.className}
+      style={{
+        ...classes.containerStyle.style,
+        zIndex: isOpen ? 1001 : 100,
+      }}
+    >
       {/* Trigger button */}
       <Box
         onClick={() => setIsOpen(!isOpen)}

@@ -87,7 +87,15 @@ export function MobileEnvironmentSelector() {
 
   return (
     <Box className={classes.mobileEnvironmentWrapperStyle.className}>
-      <Box ref={dropdownRef} {...wsClasses.containerStyle}>
+      <Box
+        ref={dropdownRef}
+        className={wsClasses.containerStyle.className}
+        style={{
+          ...wsClasses.containerStyle.style,
+          zIndex: isOpen ? 1000 : 90,
+          borderBottom: "none",
+        }}
+      >
         {/* Trigger button */}
         <Box
           onClick={() => setIsOpen(!isOpen)}

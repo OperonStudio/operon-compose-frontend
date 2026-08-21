@@ -1,5 +1,8 @@
-import { Bell, ChevronDown, Search } from "@operonstudio/icons";
+import { cx } from "@morph-css/kit";
+import { Bell, Check, ChevronDown, Search } from "@operonstudio/icons";
 import { Box, Breadcrumb, Button, Dropdown, Input } from "@operonstudio/ui";
+import React, { useEffect, useRef, useState } from "react";
+import * as wsClasses from "../workspace-switcher/style";
 import { useHeader } from "./hooks";
 import * as classes from "./style";
 
@@ -64,29 +67,118 @@ export function Header() {
 
 export function MobileEnvironmentSelector() {
   const { environments, activeEnvironment, switchEnvironment } = useHeader();
+  const [isOpen, setIsOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(event.target as Node)
+      ) {
+        setIsOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
   if (environments.length === 0) return null;
 
   return (
     <Box className={classes.mobileEnvironmentWrapperStyle.className}>
-      <Dropdown
-        trigger={
-          <Button
-            variant="outline"
-            size="sm"
-            style={{ width: "100%", justifyContent: "space-between" }}
-          >
-            <Box display="flex" align="center" gap={6}>
-              <span>Environment: <strong>{activeEnvironment ? activeEnvironment.name : "Select"}</strong></span>
+      <Box ref={dropdownRef} {...wsClasses.containerStyle}>
+        {/* Trigger button */}
+        <Box
+          onClick={() => setIsOpen(!isOpen)}
+          className={cx(
+            wsClasses.triggerBoxStyle.className,
+            isOpen ? wsClasses.triggerBoxHoverStyle.className : "",
+          )}
+          style={{
+            ...wsClasses.triggerBoxStyle.style,
+            ...(isOpen ? wsClasses.triggerBoxHoverStyle.style : {}),
+          }}
+          onMouseEnter={(e: React.MouseEvent<HTMLDivElement>) => {
+            if (!isOpen) {
+              (e.currentTarget as HTMLDivElement).style.background =
+                wsClasses.triggerBoxHoverStyle.style?.background as string;
+            }
+          }}
+          onMouseLeave={(e: React.MouseEvent<HTMLDivElement>) => {
+            if (!isOpen) {
+              (e.currentTarget as HTMLDivElement).style.background =
+                "transparent";
+            }
+          }}
+        >
+          <Box {...wsClasses.textContainerStyle}>
+            <Box {...wsClasses.textNameStyle}>
+              {activeEnvironment?.name ?? "Select Environment"}
             </Box>
-            <ChevronDown size={14} />
-          </Button>
-        }
-        onSelect={(val) => switchEnvironment(val)}
-        items={environments.map((env) => ({
-          value: env.id,
-          label: env.name,
-        }))}
-      />
+            <Box {...wsClasses.textSubtitleStyle}>Environment</Box>
+          </Box>
+          <ChevronDown
+            size={14}
+            color="var(--operon-color-text-muted)"
+            style={{
+              transition: "transform 0.2s",
+              transform: isOpen ? "rotate(180deg)" : "rotate(0deg)",
+            }}
+          />
+        </Box>
+
+        {/* Dropdown panel */}
+        {isOpen && (
+          <Box {...wsClasses.dropdownPanelStyle}>
+            <Box {...wsClasses.listContainerStyle}>
+              {environments.map((env) => {
+                const isActive = activeEnvironment?.id === env.id;
+                return (
+                  <Box
+                    key={env.id}
+                    onClick={() => {
+                      switchEnvironment(env.id);
+                      setIsOpen(false);
+                    }}
+                    className={cx(
+                      wsClasses.listItemStyle.className,
+                      isActive ? wsClasses.listItemActiveStyle.className : "",
+                    )}
+                    style={{
+                      ...wsClasses.listItemStyle.style,
+                      ...(isActive ? wsClasses.listItemActiveStyle.style : {}),
+                      color: isActive
+                        ? "var(--operon-color-primary)"
+                        : "var(--operon-color-text)",
+                    }}
+                    onMouseEnter={(e: React.MouseEvent<HTMLDivElement>) => {
+                      if (!isActive) {
+                        (e.currentTarget as HTMLDivElement).style.background =
+                          wsClasses.listItemHoverStyle.style?.background as string;
+                      }
+                    }}
+                    onMouseLeave={(e: React.MouseEvent<HTMLDivElement>) => {
+                      if (!isActive) {
+                        (e.currentTarget as HTMLDivElement).style.background =
+                          "transparent";
+                      }
+                    }}
+                  >
+                    <Box {...wsClasses.listItemIconBoxStyle}>
+                      {env.name.charAt(0).toUpperCase()}
+                    </Box>
+                    <Box {...wsClasses.listItemTextStyle}>{env.name}</Box>
+                    {isActive && (
+                      <Check size={13} color="var(--operon-color-primary)" />
+                    )}
+                  </Box>
+                );
+              })}
+            </Box>
+          </Box>
+        )}
+      </Box>
     </Box>
   );
 }

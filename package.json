@@ -18,7 +18,7 @@
   },
   "dependencies": {
     "@morph-css/kit": "^0.4.9",
-    "@operonstudio/auth": "^1.0.2",
+    "@operonstudio/auth": "^1.0.3",
     "@operonstudio/icons": "^1.0.19",
     "@operonstudio/request": "^1.0.5",
     "@operonstudio/ui": "^1.0.22",

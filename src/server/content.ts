@@ -5,22 +5,15 @@ export const fetchContent = createServerFn({
 })
   .validator((collectionId: string) => collectionId)
   .handler(async ({ data: collectionId }) => {
-    const key =
-      process.env.OPERON_KEY ??
-      process.env.VITE_OPERON_KEY ??
-      import.meta.env.VITE_OPERON_KEY;
+    const key = process.env.OPERON_KEY || "";
 
     if (!key) {
       console.warn("[fetchContent] OPERON_KEY is not configured");
       return null;
     }
 
-    const backendUrl =
-      process.env.OPERON_COMPOSE_BACKEND_URL ??
-      process.env.VITE_OPERON_COMPOSE_BACKEND_URL ??
-      import.meta.env.VITE_OPERON_COMPOSE_BACKEND_URL ??
-      "https://operon-compose-backend.onrender.com";
-
+    const backendUrl = process.env.OPERON_COMPOSE_BACKEND_URL || "";
+    
     if (!backendUrl) {
       console.warn("[fetchContent] OPERON_COMPOSE_BACKEND_URL is not configured");
       return null;

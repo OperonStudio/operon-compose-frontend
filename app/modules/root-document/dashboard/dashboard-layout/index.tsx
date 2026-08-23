@@ -9,7 +9,7 @@ import {
 } from "#/components/header";
 import { SidebarHeaderControl } from "#/components/sidebar-header-control";
 import { cx } from "@morph-css/kit";
-import { getToken, useAuth } from "@operonstudio/auth";
+import { useAuth } from "@operonstudio/auth";
 import { BarChart3, Code, Database, Moon, Sun } from "@operonstudio/icons";
 import {
   AppShell,
@@ -67,18 +67,7 @@ const PRODUCTS: AppShellProduct[] = [
   },
 ];
 
-/**
- * Attaches the current auth token to a cross-app URL for dev SSO.
- * The dev URL bridge is documented in `operon-ai-context/DEVELOPMENT_GUIDELINES.md`.
- * In prod this should be replaced with a shared cookie domain — see the auth notes.
- */
-function bridgeToken(baseUrl: string): string {
-  const token = getToken();
-  if (!token) return baseUrl;
-  const url = new URL(baseUrl);
-  url.searchParams.set("token", token);
-  return url.toString();
-}
+
 
 export const DashboardLayout = ({
   children,
@@ -148,7 +137,7 @@ export const DashboardLayout = ({
     <AppShell
       productKey="compose"
       products={PRODUCTS}
-      homepageUrl={bridgeToken(HOMEPAGE_URL)}
+      homepageUrl={HOMEPAGE_URL}
       navGroups={navGroups}
       sidebarHeader={<SidebarHeaderControl />}
       topbarStart={<Header />}
@@ -186,11 +175,11 @@ export const DashboardLayout = ({
           : undefined
       }
       onSignOut={async () => {
-        await logout("/api/auth/logout");
+        await logout();
         window.location.href = HOMEPAGE_URL;
       }}
       onSwitchProduct={(product: AppShellProduct) => {
-        window.location.href = bridgeToken(product.url);
+        window.location.href = product.url;
         return true;
       }}
       className={cx(classes.rootStyle.className)}

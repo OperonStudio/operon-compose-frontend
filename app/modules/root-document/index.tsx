@@ -1,24 +1,14 @@
 import { TopProgressBar } from "#/components/top-progress-bar";
 import { OnboardingGate } from "#/modules/onboarding";
 import TanStackQueryDevtools from "@/integrations/tanstack-query/devtools";
-import { AuthGate, AuthProvider, extractTokenFromURL } from "@operonstudio/auth";
+import { RequireAuth, AuthProvider } from "@operonstudio/auth";
 import { ThemeProvider, Toaster } from "@operonstudio/ui";
 import { TanStackDevtools } from "@tanstack/react-devtools";
 import { HeadContent, Scripts } from "@tanstack/react-router";
 import { TanStackRouterDevtoolsPanel } from "@tanstack/react-router-devtools";
 import { Dashboard } from "./dashboard/index";
 
-const HOMEPAGE_URL =
-  (typeof window !== "undefined" &&
-    window.location.hostname.endsWith("operonstudio.tech")) ||
-  import.meta.env.PROD
-    ? "https://operonstudio.tech"
-    : (import.meta.env.VITE_HOMEPAGE_URL ?? "http://localhost:4001");
-
-// Extract token synchronously before TanStack Router mounts and strips it
-if (typeof window !== "undefined") {
-  extractTokenFromURL();
-}
+const HOMEPAGE_URL = import.meta.env.VITE_HOMEPAGE_URL ?? "http://localhost:4001";
 
 export const RootDocument = ({ children }: { children: React.ReactNode }) => {
   return (
@@ -27,27 +17,17 @@ export const RootDocument = ({ children }: { children: React.ReactNode }) => {
         <meta charSet="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <HeadContent />
-        <style>{`
-          @media (max-width: 900px) {
-            aside {
-              display: none !important;
-            }
-          }
-        `}</style>
       </head>
       <body>
         <ThemeProvider defaultDark={false}>
-          <AuthProvider
-            refreshUrl="/api/auth/refresh"
-            enableUrlTokenBridge={true}
-          >
-            <AuthGate homepageUrl={HOMEPAGE_URL}>
+          <AuthProvider>
+            <RequireAuth homepageUrl={HOMEPAGE_URL}>
               <TopProgressBar />
               <Toaster />
               <OnboardingGate>
                 <Dashboard>{children}</Dashboard>
               </OnboardingGate>
-            </AuthGate>
+            </RequireAuth>
           </AuthProvider>
           <TanStackDevtools
             config={{

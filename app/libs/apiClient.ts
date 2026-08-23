@@ -1,4 +1,4 @@
-import { getAuthMiddlewareOptions } from "@operonstudio/auth";
+
 import { createClient } from "@operonstudio/request";
 import { withLogger, withAuth } from "@operonstudio/request/middleware";
 
@@ -24,10 +24,7 @@ operonApiClient.use(async (ctx, next) => {
 
 operonApiClient.use(
   withAuth({
-    ...getAuthMiddlewareOptions({
-      refreshUrl: "/api/auth/refresh",
-    }),
-    strict: false,
+    refreshUrl: "/api/auth/refresh",
   })
 );
 

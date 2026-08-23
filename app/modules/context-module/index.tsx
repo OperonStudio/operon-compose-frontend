@@ -5,8 +5,8 @@ import { ChevronDown, FileEdit, X } from "@operonstudio/icons";
 import { Box, Button, Chip, Dropdown, Input, Modal } from "@operonstudio/ui";
 import {
   useMutation,
+  useQuery,
   useQueryClient,
-  useSuspenseQuery,
 } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import {
@@ -139,15 +139,15 @@ const ContextModal = ({
 
 export const ContextPage = () => {
   const queryClient = useQueryClient();
-  const { data: variables = [] } = useSuspenseQuery(getContextsOptions);
-  const { data: pageData } = useSuspenseQuery(getPageContentOptions("context"));
+  const { data: variables = [] } = useQuery(getContextsOptions);
+  const { data: pageData } = useQuery(getPageContentOptions("context"));
   const typeOptions = (pageData?.content?.typeOptions as any[]) ?? [
     { value: "string", label: "String" },
     { value: "number", label: "Number" },
     { value: "boolean", label: "Boolean" },
     { value: "array", label: "Array" },
   ];
-  const modals = pageData.modals;
+  const modals = pageData?.modals;
 
   const [isPromptOpen, setIsPromptOpen] = useState(false);
   const [editData, setEditData] = useState<ContextVariable | null>(null);

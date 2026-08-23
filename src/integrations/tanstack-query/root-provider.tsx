@@ -4,10 +4,10 @@ export function getContext() {
   const queryClient = new QueryClient({
     defaultOptions: {
       queries: {
-        retry: false, // Disabled as requested
+        retry: false,
       },
       mutations: {
-        retry: false, // Disabled as requested
+        retry: false,
       },
     },
   });
@@ -16,4 +16,4 @@ export function getContext() {
     queryClient,
   };
 }
-export default function TanstackQueryProvider() {}
+export default function TanstackQueryProvider() { }

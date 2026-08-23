@@ -8,7 +8,6 @@ import {
   useMutation,
   useQuery,
   useQueryClient,
-  useSuspenseQuery,
 } from "@tanstack/react-query";
 import { useParams } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
@@ -30,7 +29,7 @@ export const ProjectIdPage = () => {
   const apiKeysForThisProject =
     projectsWithKeys.find((p) => p.id === projectId)?.keys ?? [];
 
-  const { data: collections = [] } = useSuspenseQuery(
+  const { data: collections = [] } = useQuery(
     getCollectionsOptions(projectId),
   );
 

@@ -8,7 +8,6 @@ import {
   useMutation,
   useQuery,
   useQueryClient,
-  useSuspenseQuery,
 } from "@tanstack/react-query";
 import { useState } from "react";
 import {
@@ -30,12 +29,12 @@ export const EnvironmentsPage = () => {
   const queryClient = useQueryClient();
 
   const { data: environments, isLoading } = useQuery(getEnvironmentsOptions);
-  const { data: pageData } = useSuspenseQuery(
+  const { data: pageData } = useQuery(
     getPageContentOptions("environments"),
   );
 
   const emptyState = pageData?.content?.emptyState;
-  const modals = pageData.modals;
+  const modals = pageData?.modals;
   const EmptyStateIcon = resolveIcon(emptyState?.icon);
 
   const { mutate: createEnvironment } = useMutation({

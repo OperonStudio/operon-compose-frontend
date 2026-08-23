@@ -1,7 +1,7 @@
 import { getPageContentOptions } from "#/common/api/content-api";
 import { resolveIcon } from "#/common/icon-map";
 import { formatBytes } from "#/libs/utils";
-import { useQuery, useSuspenseQuery } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import React from "react";
 import { getUsageOptions } from "./api";
 
@@ -10,7 +10,7 @@ export const useDashboard = () => {
     ...getUsageOptions(),
   });
 
-  const { data: pageData } = useSuspenseQuery(getPageContentOptions("dashboard"));
+  const { data: pageData } = useQuery(getPageContentOptions("dashboard"));
   const statCardConfigs = (pageData?.content?.statCards as any[]) ?? [];
   const labels = pageData?.content?.labels;
 

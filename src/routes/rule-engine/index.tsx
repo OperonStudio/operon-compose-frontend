@@ -1,16 +1,14 @@
 import { getPageContentOptions } from "#/common/api/content-api";
 import { Box } from "@operonstudio/ui";
-import { useSuspenseQuery } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/rule-engine/")({
-  loader: ({ context: { queryClient } }) =>
-    queryClient.ensureQueryData(getPageContentOptions("rule-engine")),
   component: RuleEngineIndex,
 });
 
 function RuleEngineIndex() {
-  const { data: pageData } = useSuspenseQuery(
+  const { data: pageData } = useQuery(
     getPageContentOptions("rule-engine"),
   );
   const emptyState = pageData?.content?.emptyState;

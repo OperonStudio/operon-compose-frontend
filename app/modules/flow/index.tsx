@@ -11,13 +11,13 @@ import {
   User,
 } from "@operonstudio/icons";
 import { Box, Button, Dropdown, FlowBoard } from "@operonstudio/ui";
-import { useQuery, useSuspenseQuery } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import * as classes from "./style";
 
 export const FlowPage = () => {
   const { data: projects } = useQuery(getProjectsOptions);
-  const { data: pageData } = useSuspenseQuery(getPageContentOptions("flow"));
+  const { data: pageData } = useQuery(getPageContentOptions("flow"));
 
   const labels = pageData?.content?.labels;
   const emptyState = pageData?.content?.emptyState;

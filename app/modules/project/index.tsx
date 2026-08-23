@@ -5,7 +5,7 @@ import { Box, Button } from "@operonstudio/ui";
 import {
   useMutation,
   useQueryClient,
-  useSuspenseQuery,
+  useQuery,
 } from "@tanstack/react-query";
 import { useState } from "react";
 import {
@@ -39,13 +39,13 @@ export const ProjectPage = () => {
   } | null>(null);
 
   const queryClient = useQueryClient();
-  const { data: projects } = useSuspenseQuery(getProjectsOptions);
-  const { data: pageData } = useSuspenseQuery(
+  const { data: projects = [] } = useQuery(getProjectsOptions);
+  const { data: pageData } = useQuery(
     getPageContentOptions("projects"),
   );
 
   const emptyState = pageData?.content?.emptyState;
-  const modals = pageData.modals;
+  const modals = pageData?.modals;
 
   const createProject = useMutation({
     ...createProjectOptions,

@@ -6,7 +6,6 @@ import {
   useMutation,
   useQuery,
   useQueryClient,
-  useSuspenseQuery,
 } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import { getApiKeysOptions, regenerateApiKeyOptions } from "./api";
@@ -22,11 +21,11 @@ export const ApiKeysPage = () => {
   const queryClient = useQueryClient();
 
   const { data: projectsWithKeys, isLoading } = useQuery(getApiKeysOptions());
-  const { data: pageData } = useSuspenseQuery(
+  const { data: pageData } = useQuery(
     getPageContentOptions("api-keys"),
   );
   const labels = pageData?.content?.labels;
-  const modals = pageData.modals;
+  const modals = pageData?.modals;
 
   const { mutate: regenerateApiKey, isPending } = useMutation({
     ...regenerateApiKeyOptions,

@@ -1,4 +1,7 @@
 export const ComposeEndpoints = {
+  CONTENT: (collectionId: string) =>
+    `/api/content/operon-compose/${collectionId}`,
+
   WORKSPACES: (workspaceId?: string) =>
     workspaceId ? `/api/workspaces/${workspaceId}` : `/api/workspaces`,
 

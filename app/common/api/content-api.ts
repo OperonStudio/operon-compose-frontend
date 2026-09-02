@@ -1,5 +1,6 @@
-import { fetchContent } from "@/server/content";
+import { operonApiClient } from "#/libs/apiClient";
 import { queryOptions } from "@tanstack/react-query";
+import { ComposeEndpoints } from "./endpoints";
 import type { AppConfig, PageContent, SidebarContent } from "./interfaces";
 
 const CONTENT_STALE_TIME = 5 * 60 * 1000;
@@ -7,8 +8,14 @@ const CONTENT_STALE_TIME = 5 * 60 * 1000;
 export const appConfigContentOptions = queryOptions({
   queryKey: ["content", "app-config"],
   queryFn: async () => {
-    const res = await fetchContent({ data: "app-config" });
-    return (res ?? {}) as AppConfig;
+    try {
+      const res = await operonApiClient.get<AppConfig>(
+        ComposeEndpoints.CONTENT("app-config"),
+      );
+      return (res ?? {}) as AppConfig;
+    } catch {
+      return {} as AppConfig;
+    }
   },
   staleTime: CONTENT_STALE_TIME,
 });
@@ -16,8 +23,14 @@ export const appConfigContentOptions = queryOptions({
 export const sidebarContentOptions = queryOptions({
   queryKey: ["content", "sidebar"],
   queryFn: async () => {
-    const res = await fetchContent({ data: "sidebar" });
-    return (res ?? {}) as SidebarContent;
+    try {
+      const res = await operonApiClient.get<SidebarContent>(
+        ComposeEndpoints.CONTENT("sidebar"),
+      );
+      return (res ?? {}) as SidebarContent;
+    } catch {
+      return {} as SidebarContent;
+    }
   },
   staleTime: CONTENT_STALE_TIME,
 });
@@ -26,8 +39,22 @@ export const getPageContentOptions = (collectionId: string) =>
   queryOptions({
     queryKey: ["content", collectionId],
     queryFn: async () => {
-      const res = await fetchContent({ data: collectionId });
-      return (res ?? { id: collectionId, title: "", description: "", content: {} }) as PageContent;
+      try {
+        const res = await operonApiClient.get<PageContent>(
+          ComposeEndpoints.CONTENT(collectionId),
+        );
+        return (
+          res ?? {
+            page: { title: "", subtitle: "" },
+            content: {},
+          }
+        );
+      } catch {
+        return {
+          page: { title: "", subtitle: "" },
+          content: {},
+        } as PageContent;
+      }
     },
     enabled: Boolean(collectionId),
   });

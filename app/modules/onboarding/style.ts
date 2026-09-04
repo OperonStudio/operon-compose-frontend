@@ -15,7 +15,6 @@ export const cardStyle = css({
   width: "100%",
   maxWidth: "440px",
   backgroundColor: "var(--operon-color-surface)",
-  border: "1px solid var(--operon-color-border)",
   borderRadius: "var(--operon-radius-lg)",
   boxShadow: "var(--operon-shadow-xl)",
   padding: "24px",
@@ -25,18 +24,16 @@ export const cardStyle = css({
 });
 
 export const eyebrowStyle = css({
-  fontSize: "10px",
-  fontWeight: "600",
-  color: "var(--operon-color-primary)",
-  textTransform: "uppercase",
-  letterSpacing: "0.1em",
+  fontSize: "var(--operon-font-size-sm)",
+  fontWeight: "500",
+  color: "var(--operon-color-text-muted)",
 });
 
 export const titleStyle = css({
-  fontSize: "18px",
+  fontSize: "var(--operon-font-size-xl)",
   fontWeight: "700",
   color: "var(--operon-color-text)",
-  letterSpacing: "-0.005em",
+  letterSpacing: "-0.02em",
 });
 
 export const bodyStyle = css({
@@ -80,9 +77,8 @@ export const suggestionChipStyle = css({
   padding: "3px 8px",
   fontSize: "11px",
   fontWeight: "500",
-  border: "1px solid var(--operon-color-border)",
   borderRadius: "var(--operon-radius-full)",
-  backgroundColor: "transparent",
+  backgroundColor: "var(--operon-color-surface-sunken)",
   color: "var(--operon-color-text-muted)",
   cursor: "pointer",
   transition:
@@ -105,7 +101,6 @@ export const centeredLoaderStyle = css({
 
 export const errorPanelStyle = css({
   ...cardStyle,
-  border: "1px solid var(--operon-color-danger)",
   backgroundColor: "var(--operon-color-danger-ghost)",
   color: "var(--operon-color-danger)",
 });

@@ -79,9 +79,8 @@ export const DefineEnvironmentModal = ({
           style={{
             background: "var(--operon-color-surface)",
             border: "1px solid var(--operon-color-border)",
-            borderRadius: "var(--operon-radius-lg, 8px)",
+            borderRadius: "var(--operon-radius-lg, 14px)",
             padding: "24px",
-            boxShadow: "0 1px 2px rgba(0,0,0,0.02)",
           }}
         >
           <Box display="flex" direction="column" gap="20px">

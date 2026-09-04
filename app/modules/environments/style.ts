@@ -22,14 +22,12 @@ export const pageContainerStyle = css({
 });
 
 export const environmentCardStyle = css({
-  background: "var(--operon-color-surface)",
-  border: "1px solid var(--operon-color-border)",
-  borderRadius: "var(--operon-radius-lg, 8px)",
+  backgroundColor: "var(--operon-color-surface-sunken)",
+  borderRadius: "var(--operon-radius-xl)",
   padding: "24px",
   display: "flex",
   flexDirection: "column",
   gap: "12px",
-  boxShadow: "2px 2px 0px rgba(0,0,0,0.05)",
   transition: "transform 0.2s, box-shadow 0.2s",
   "@media (max-width: 640px)": {
     padding: "16px",
@@ -41,14 +39,14 @@ export const environmentNameStyle = css({
   fontWeight: 700,
   color: "var(--operon-color-text)",
   fontFamily:
-    "var(--operon-typography-heading, 'Architects Daughter', cursive)",
+    "var(--operon-typography-heading)",
   letterSpacing: "0.5px",
 });
 
 export const environmentDescriptionStyle = css({
   fontSize: "14px",
   color: "var(--operon-color-text-muted)",
-  fontFamily: "var(--operon-typography-ui, 'Inter', sans-serif)",
+  fontFamily: "var(--operon-typography-ui)",
 });
 
 export const environmentActionsStyle = css({

@@ -5,8 +5,7 @@ export const pageHeaderContainerStyle = css({
   alignItems: "center",
   justifyContent: "space-between",
   padding: "24px 32px",
-  borderBottom: "1px solid var(--operon-color-border, #eaeaea)",
-  backgroundColor: "var(--operon-color-surface, #fff)",
+  borderBottom: "1px solid var(--operon-color-border)",
 });
 
 export const titleGroupStyle = css({
@@ -16,14 +15,15 @@ export const titleGroupStyle = css({
 });
 
 export const titleStyle = css({
-  fontSize: "20px",
+  fontSize: "var(--operon-font-size-xl)",
+  letterSpacing: "-0.02em",
   fontWeight: "600",
-  color: "var(--operon-color-text, #000)",
+  color: "var(--operon-color-text, #16151a)",
   margin: 0,
 });
 
 export const descriptionStyle = css({
   fontSize: "14px",
-  color: "var(--operon-color-text-muted, #666)",
+  color: "var(--operon-color-text-muted, #8a868c)",
   margin: 0,
 });

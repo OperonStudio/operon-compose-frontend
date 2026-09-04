@@ -248,7 +248,7 @@ export const DefineDecisionModal = ({
             style={{
               background: "var(--operon-color-surface)",
               border: "1px solid var(--operon-color-border)",
-              borderRadius: "var(--operon-radius-lg, 8px)",
+              borderRadius: "var(--operon-radius-lg, 14px)",
               padding: "20px",
             }}
           >
@@ -310,7 +310,7 @@ export const DefineDecisionModal = ({
             style={{
               background: "var(--operon-color-surface)",
               border: "1px solid var(--operon-color-border)",
-              borderRadius: "var(--operon-radius-lg, 8px)",
+              borderRadius: "var(--operon-radius-lg, 14px)",
               padding: "20px",
             }}
           >
@@ -480,7 +480,7 @@ export const DefineDecisionModal = ({
             style={{
               background: "var(--operon-color-surface)",
               border: "1px solid var(--operon-color-border)",
-              borderRadius: "var(--operon-radius-lg, 8px)",
+              borderRadius: "var(--operon-radius-lg, 14px)",
               padding: "20px",
             }}
           >

@@ -22,10 +22,9 @@ export const projectSectionStyle = css({
   display: "flex",
   flexDirection: "column",
   gap: "16px",
-  backgroundColor: "var(--operon-color-surface, #fff)",
-  borderRadius: "var(--operon-radius-lg, 16px)",
+  backgroundColor: "var(--operon-color-surface, #ffffff)",
+  borderRadius: "var(--operon-radius-lg, 14px)",
   padding: "28px",
-  boxShadow: "var(--operon-shadow-sm)",
   "@media (max-width: 768px)": {
     padding: "16px",
     gap: "12px",
@@ -46,14 +45,13 @@ export const keyContainerStyle = css({
   alignItems: "center",
   justifyContent: "space-between",
   padding: "16px 20px",
-  backgroundColor: "var(--operon-color-surface-raised, #f8f8ff)",
-  border: "1px solid var(--operon-color-border, #c7c7e6)",
-  borderRadius: "var(--operon-radius-md, 12px)",
+  backgroundColor: "var(--operon-color-surface-sunken)",
+  borderRadius: "var(--operon-radius-xl)",
   transition: "all 0.2s ease",
   cursor: "var(--operon-cursor-pointer, pointer)",
   "&:hover": {
-    borderColor: "var(--operon-color-primary, #6366f1)",
-    backgroundColor: "var(--operon-color-primary-ghost, rgba(99,102,241,0.05))",
+    borderColor: "var(--operon-color-primary, #d33a5c)",
+    backgroundColor: "var(--operon-color-primary-ghost, rgba(211, 58, 92, 0.08))",
   },
   "@media (max-width: 640px)": {
     flexDirection: "column",
@@ -72,22 +70,21 @@ export const keyInfoStyle = css({
 export const keyNameStyle = css({
   fontSize: "15px",
   fontWeight: "600",
-  color: "var(--operon-color-text, #1a1a2e)",
+  color: "var(--operon-color-text, #16151a)",
 });
 
 export const keyDateStyle = css({
   fontSize: "12px",
-  color: "var(--operon-color-text-muted, #6b7280)",
+  color: "var(--operon-color-text-muted, #8a868c)",
 });
 
 export const keyValueStyle = css({
   fontSize: "13px",
   fontFamily: "var(--operon-typography-mono)",
-  color: "var(--operon-color-text, #1a1a2e)",
-  backgroundColor: "var(--operon-color-surface, #fff)",
+  color: "var(--operon-color-text, #16151a)",
+  backgroundColor: "var(--operon-color-surface-sunken)",
   padding: "8px 14px",
-  borderRadius: "var(--operon-radius-sm, 8px)",
-  border: "1px solid var(--operon-color-border, #c7c7e6)",
+  borderRadius: "var(--operon-radius-full)",
   display: "flex",
   alignItems: "center",
   gap: "12px",

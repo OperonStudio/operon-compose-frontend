@@ -58,9 +58,8 @@ export const headerSubtitleStyle = css({
 });
 
 export const cardStyle = css({
-  background: "var(--operon-color-surface)",
-  border: "1px solid var(--operon-color-border)",
-  borderRadius: "var(--operon-radius-lg, 8px)",
+  backgroundColor: "var(--operon-color-surface-sunken)",
+  borderRadius: "var(--operon-radius-xl)",
   overflow: "hidden",
 });
 
@@ -104,7 +103,7 @@ export const avatarStyle = css({
   height: "36px",
   borderRadius: "50%",
   background: "var(--operon-color-primary)",
-  color: "#fff",
+  color: "var(--operon-color-text-inverse)",
   display: "flex",
   alignItems: "center",
   justifyContent: "center",

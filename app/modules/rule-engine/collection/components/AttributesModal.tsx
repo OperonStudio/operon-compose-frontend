@@ -57,7 +57,7 @@ export const AttributesModal = ({
         direction="column"
         style={{
           border: "1px solid var(--operon-color-border)",
-          borderRadius: "var(--operon-radius-md, 6px)",
+          borderRadius: "var(--operon-radius-md, 10px)",
           maxHeight: "400px",
           overflowY: "auto",
           background: "var(--operon-color-surface)",
@@ -79,7 +79,7 @@ export const AttributesModal = ({
                     ? "1px solid var(--operon-color-border)"
                     : "none",
                 background: isSelected
-                  ? "var(--operon-color-surface-raised, #f9fafb)"
+                  ? "var(--operon-color-surface-raised, #fbfaf9)"
                   : "transparent",
                 transition: "background 0.2s",
                 cursor: "pointer",

@@ -8,7 +8,6 @@ export const pageContainerStyle = css({
   maxWidth: "100vw",
   boxSizing: "border-box",
   minHeight: "calc(100vh - 140px)",
-  backgroundColor: "var(--operon-color-background)",
   borderTop: "1px solid var(--operon-color-border)",
   "@media (min-width: 901px)": {
     flexDirection: "row",
@@ -64,8 +63,7 @@ export const collectionListStyle = css({
 
 export const collectionItemStyle = css({
   padding: "6px 12px",
-  borderRadius: "var(--operon-radius-full)",
-  border: "1px solid var(--operon-color-border)",
+  borderRadius: "var(--operon-radius-lg)",
   cursor: "pointer",
   fontSize: "13px",
   fontWeight: 500,
@@ -141,7 +139,6 @@ export const envBadgeStyle = css({
   flexShrink: 0,
   padding: "2px 8px",
   borderRadius: "var(--operon-radius-full)",
-  border: "1px solid var(--operon-color-border)",
   backgroundColor: "var(--operon-color-surface-sunken)",
   fontSize: "11px",
   fontWeight: 600,

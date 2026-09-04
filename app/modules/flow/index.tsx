@@ -150,7 +150,7 @@ export const FlowPage = () => {
       {selectedProject && selectedCollection ? (
         <Box
           {...classes.cardStyle}
-          style={{ backgroundColor: "#f8fafc", flexDirection: "column" }}
+          style={{ backgroundColor: "var(--operon-color-surface-raised)", flexDirection: "column" }}
         >
           <Box
             style={{
@@ -253,7 +253,7 @@ export const FlowPage = () => {
             justifyContent: "center",
             padding: "100px 48px",
             color: "var(--operon-color-text-muted)",
-            backgroundColor: "#ffffff",
+            backgroundColor: "var(--operon-color-surface)",
           }}
         >
           <Box

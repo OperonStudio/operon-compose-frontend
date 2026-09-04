@@ -13,7 +13,6 @@ export const pageContainerStyle = css({
   boxSizing: "border-box",
   padding: PAGE_PADDING_MOBILE,
   [DESKTOP_QUERY]: { padding: PAGE_PADDING },
-  backgroundColor: "var(--operon-color-background, #fafafa)",
   backgroundImage:
     "radial-gradient(circle at top center, rgba(99, 102, 241, 0.03) 0%, transparent 100%)",
   overflowY: "auto",
@@ -40,11 +39,9 @@ export const headerSubtitleStyle = css({
 });
 
 export const cardStyle = css({
-  backgroundColor: "#ffffff",
-  borderRadius: "16px",
+  backgroundColor: "var(--operon-color-surface-sunken)",
+  borderRadius: "var(--operon-radius-xl)",
   padding: "32px",
-  border: "1px solid rgba(0,0,0,0.04)",
-  boxShadow: "0 10px 30px -10px rgba(0,0,0,0.05)",
   marginBottom: "32px",
   "@media (max-width: 640px)": {
     padding: "18px",
@@ -53,11 +50,9 @@ export const cardStyle = css({
 });
 
 export const nodeCardStyle = css({
-  backgroundColor: "#ffffff",
-  borderRadius: "16px",
+  backgroundColor: "var(--operon-color-surface)",
+  borderRadius: "var(--operon-radius-lg)",
   padding: "24px 20px",
-  border: "1px solid rgba(99, 102, 241, 0.15)",
-  boxShadow: "0 4px 20px rgba(99, 102, 241, 0.05)",
   display: "flex",
   flexDirection: "column",
   alignItems: "center",
@@ -81,7 +76,6 @@ export const selectStyle = css({
   fontWeight: "500",
   minWidth: "240px",
   outline: "none",
-  boxShadow: "0 1px 2px rgba(0,0,0,0.02)",
   cursor: "pointer",
   "@media (max-width: 640px)": {
     minWidth: "100%",

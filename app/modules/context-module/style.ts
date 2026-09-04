@@ -16,8 +16,7 @@ export const contextItemStyle = css({
   justifyContent: "space-between",
   padding: "16px 24px",
   backgroundColor: "var(--operon-color-surface)",
-  border: "1px solid var(--operon-color-border)",
-  borderRadius: "12px",
+  borderRadius: "var(--operon-radius-lg)",
   "@media (max-width: 640px)": {
     flexDirection: "column",
     alignItems: "flex-start",

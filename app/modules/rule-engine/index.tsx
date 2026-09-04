@@ -33,7 +33,7 @@ const ProjectSidebarItem = ({
         {...classes.listItemContainerStyle}
         style={{
           backgroundColor: isProjectActive
-            ? "var(--operon-color-surface-raised, #f0f0f0)"
+            ? "var(--operon-color-surface-raised, #fbfaf9)"
             : undefined,
           color: isProjectActive ? "var(--operon-color-primary)" : "inherit",
           fontWeight: isProjectActive ? "600" : "500",
@@ -100,7 +100,7 @@ const ProjectSidebarItem = ({
                   {...classes.listItemStyle}
                   style={{
                     backgroundColor: isColActive
-                      ? "var(--operon-color-surface-raised, #f0f0f0)"
+                      ? "var(--operon-color-surface-raised, #fbfaf9)"
                       : "transparent",
                     color: isColActive
                       ? "var(--operon-color-primary)"

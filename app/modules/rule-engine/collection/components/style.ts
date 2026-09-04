@@ -105,10 +105,9 @@ export const conditionRowStyle = css({
   gridTemplateColumns: "1fr auto",
   gap: "10px",
   alignItems: "start",
-  border: "1px solid var(--operon-color-border)",
-  borderRadius: "var(--operon-radius-sm)",
+  borderRadius: "var(--operon-radius-lg)",
   padding: "12px",
-  backgroundColor: "var(--operon-color-surface-sunken)",
+  backgroundColor: "var(--operon-color-surface)",
   "@media (min-width: 721px)": {
     gridTemplateColumns: "1.2fr 1.2fr 1.5fr auto",
     gap: "12px",

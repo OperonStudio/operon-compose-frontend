@@ -5,9 +5,8 @@ export const simulatorStyle = css({
   flexDirection: "column",
   gap: "16px",
   padding: "20px",
-  border: "1px solid var(--operon-color-border)",
-  borderRadius: "var(--operon-radius-md)",
-  backgroundColor: "var(--operon-color-surface)",
+  borderRadius: "var(--operon-radius-xl)",
+  backgroundColor: "var(--operon-color-surface-sunken)",
 });
 
 export const simulatorHeaderStyle = css({

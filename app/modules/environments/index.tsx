@@ -121,7 +121,7 @@ export const EnvironmentsPage = () => {
               height: 72,
               borderRadius: "50%",
               background:
-                "var(--operon-color-primary-ghost, rgba(99,102,241,0.1))",
+                "var(--operon-color-primary-ghost, rgba(211, 58, 92, 0.08))",
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
@@ -129,7 +129,7 @@ export const EnvironmentsPage = () => {
           >
             <EmptyStateIcon
               size={32}
-              color="var(--operon-color-primary, #6366f1)"
+              color="var(--operon-color-primary, #d33a5c)"
             />
           </Box>
           <Box>

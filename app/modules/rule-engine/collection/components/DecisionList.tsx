@@ -25,7 +25,7 @@ export const DecisionList = ({
           background: isVisible
             ? "rgba(51, 214, 166, 0.12)"
             : "rgba(239, 68, 68, 0.12)",
-          color: isVisible ? "#0D9A73" : "#DC2626",
+          color: isVisible ? "var(--operon-color-success)" : "var(--operon-color-danger)",
           fontWeight: 700,
           fontSize: "11px",
           textTransform: "uppercase",
@@ -70,7 +70,7 @@ export const DecisionList = ({
             textAlign: "center",
             background: "var(--operon-color-surface)",
             border: "1px border var(--operon-color-border)",
-            borderRadius: "var(--operon-radius-lg, 8px)",
+            borderRadius: "var(--operon-radius-lg, 14px)",
             color: "var(--operon-color-text-muted)",
             fontSize: "14px",
           }}
@@ -84,7 +84,7 @@ export const DecisionList = ({
               key={decision.id}
               style={{
                 border: "1px solid var(--operon-color-border)",
-                borderRadius: "var(--operon-radius-lg, 8px)",
+                borderRadius: "var(--operon-radius-lg, 14px)",
                 padding: "20px",
                 background: "var(--operon-color-surface)",
                 display: "flex",

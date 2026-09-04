@@ -284,7 +284,7 @@ export const ApiKeysPage = () => {
               style={{
                 background: "rgba(255, 176, 32, 0.10)",
                 border: "1px solid rgba(255, 176, 32, 0.35)",
-                color: "#B45309",
+                color: "var(--operon-color-warning)",
                 borderRadius: "8px",
                 padding: "10px 12px",
                 fontSize: "13px",

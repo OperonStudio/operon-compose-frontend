@@ -192,7 +192,7 @@ export const SettingsPage = () => {
                                   style={{
                                     fontSize: "10px",
                                     background: "rgba(51, 214, 166, 0.12)",
-                                    color: "#0D9A73",
+                                    color: "var(--operon-color-success)",
                                     fontWeight: 700,
                                   }}
                                 >
@@ -287,7 +287,7 @@ export const SettingsPage = () => {
                             variant="ghost"
                             size="sm"
                             onClick={() => revokeInviteMutation.mutate(inv.id)}
-                            style={{ color: "#DC2626", gap: "6px" }}
+                            style={{ color: "var(--operon-color-danger)", gap: "6px" }}
                           >
                             <Trash2 size={14} /> Revoke
                           </Button>
@@ -312,7 +312,7 @@ export const SettingsPage = () => {
                   style={{
                     background: "var(--operon-color-surface)",
                     border: "1px solid var(--operon-color-border)",
-                    borderRadius: "var(--operon-radius-lg, 8px)",
+                    borderRadius: "var(--operon-radius-lg, 14px)",
                     padding: "24px",
                     display: "flex",
                     flexDirection: "column",

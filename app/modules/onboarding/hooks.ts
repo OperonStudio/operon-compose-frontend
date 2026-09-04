@@ -1,7 +1,3 @@
-import { Endpoints } from "#/common/api/endpoints";
-import type { Workspace } from "#/components/workspace-switcher/api";
-import { operonApiClient } from "#/libs/apiClient";
-import type { Environment } from "#/modules/environments/types";
 import { toast } from "@operonstudio/ui";
 import {
   mutationOptions,
@@ -11,33 +7,43 @@ import {
   useQueryClient,
 } from "@tanstack/react-query";
 import { useEffect } from "react";
-
-const ACTIVE_WORKSPACE_KEY = "operon_active_workspace_id";
-const ACTIVE_ENVIRONMENT_KEY = "operon_active_environment_id";
+import {
+  getActiveScope,
+  setActiveEnvironment,
+  setActiveWorkspace,
+} from "#/common/active-scope";
+import { Endpoints } from "#/common/api/endpoints";
+import { queryKeys } from "#/common/api/query-keys";
+import type { Workspace } from "#/components/workspace-switcher/api";
+import { operonApiClient } from "#/libs/apiClient";
+import type { Environment } from "#/modules/environments/types";
 
 // ── Query / mutation options ───────────────────────────────────────────────
 
 const workspacesQueryOptions = queryOptions({
-  queryKey: ["workspaces"],
+  queryKey: queryKeys.workspaces(),
   queryFn: async () =>
-    await operonApiClient.get<Workspace[]>(Endpoints.composeEndpoints.WORKSPACES()),
+    await operonApiClient.get<Workspace[]>(
+      Endpoints.composeEndpoints.WORKSPACES(),
+    ),
 });
 
 const environmentsQueryOptions = (workspaceId: string) =>
   queryOptions({
-    queryKey: ["environments", workspaceId],
+    queryKey: queryKeys.environments(workspaceId),
     queryFn: async () =>
       await operonApiClient.get<Environment[]>(
         Endpoints.composeEndpoints.ENVIRONMENTS(workspaceId),
       ),
-    enabled: !!workspaceId,
+    enabled: Boolean(workspaceId),
   });
 
 const createWorkspaceMutation = mutationOptions({
   mutationFn: async (name: string) =>
-    await operonApiClient.post<Workspace>(Endpoints.composeEndpoints.WORKSPACES(), {
-      name,
-    }),
+    await operonApiClient.post<Workspace>(
+      Endpoints.composeEndpoints.WORKSPACES(),
+      { name },
+    ),
 });
 
 const createEnvironmentMutation = mutationOptions({
@@ -60,6 +66,14 @@ const createEnvironmentMutation = mutationOptions({
 
 export type OnboardingStep = "idle" | "workspace" | "environment" | "ready";
 
+/**
+ * Decides whether the signed-in user can be shown the product yet.
+ *
+ * Compose needs a workspace and, inside it, an environment before any other
+ * screen has a URL to call. This hook also repairs the stored ids when they
+ * point at something the user can no longer see — a workspace they were removed
+ * from, or an environment that was deleted.
+ */
 export function useOnboarding() {
   const qc = useQueryClient();
 
@@ -69,66 +83,62 @@ export function useOnboarding() {
     isError: workspacesErrored,
   } = useQuery(workspacesQueryOptions);
 
-  // Pick an active workspace id: stored value if still valid, else first workspace.
-  const storedWorkspaceId =
-    typeof window !== "undefined"
-      ? localStorage.getItem(ACTIVE_WORKSPACE_KEY)
-      : null;
-  const validStoredWs = workspaces?.some((w) => w.id === storedWorkspaceId);
-  const effectiveWorkspaceId = validStoredWs
-    ? storedWorkspaceId
-    : (workspaces?.[0]?.id ?? null);
+  const stored = getActiveScope();
 
-  // Persist any correction back to localStorage so the rest of the app's
-  // hooks (which read via getActiveIds()) see a consistent value.
+  // Keep the stored workspace if it is still one the user belongs to, else take
+  // the first one they do.
+  const storedWorkspaceIsValid = workspaces?.some(
+    (w) => w.id === stored.workspaceId,
+  );
+  const effectiveWorkspaceId = storedWorkspaceIsValid
+    ? stored.workspaceId
+    : (workspaces?.[0]?.id ?? "");
+
   useEffect(() => {
-    if (
-      effectiveWorkspaceId &&
-      effectiveWorkspaceId !== storedWorkspaceId &&
-      typeof window !== "undefined"
-    ) {
-      localStorage.setItem(ACTIVE_WORKSPACE_KEY, effectiveWorkspaceId);
-      qc.invalidateQueries();
+    if (!effectiveWorkspaceId || effectiveWorkspaceId === stored.workspaceId) {
+      return;
     }
-  }, [effectiveWorkspaceId, storedWorkspaceId, qc]);
+    setActiveWorkspace(effectiveWorkspaceId);
+    qc.invalidateQueries({
+      queryKey: queryKeys.workspace(effectiveWorkspaceId),
+    });
+  }, [effectiveWorkspaceId, stored.workspaceId, qc]);
 
   const {
     data: environments,
     isLoading: environmentsLoading,
     isError: environmentsErrored,
-  } = useQuery(environmentsQueryOptions(effectiveWorkspaceId ?? ""));
+  } = useQuery(environmentsQueryOptions(effectiveWorkspaceId));
 
-  const storedEnvironmentId =
-    typeof window !== "undefined"
-      ? localStorage.getItem(ACTIVE_ENVIRONMENT_KEY)
-      : null;
-  const validStoredEnv = environments?.some(
-    (e) => e.id === storedEnvironmentId,
+  const storedEnvironmentIsValid = environments?.some(
+    (e) => e.id === stored.environmentId,
   );
-  const effectiveEnvironmentId = validStoredEnv
-    ? storedEnvironmentId
-    : (environments?.[0]?.id ?? null);
+  const effectiveEnvironmentId = storedEnvironmentIsValid
+    ? stored.environmentId
+    : (environments?.[0]?.id ?? "");
 
   useEffect(() => {
     if (
-      effectiveEnvironmentId &&
-      effectiveEnvironmentId !== storedEnvironmentId &&
-      typeof window !== "undefined"
+      !effectiveEnvironmentId ||
+      effectiveEnvironmentId === stored.environmentId
     ) {
-      localStorage.setItem(ACTIVE_ENVIRONMENT_KEY, effectiveEnvironmentId);
-      qc.invalidateQueries();
+      return;
     }
-  }, [effectiveEnvironmentId, storedEnvironmentId, qc]);
+    setActiveEnvironment(effectiveEnvironmentId);
+    if (effectiveWorkspaceId) {
+      qc.invalidateQueries({
+        queryKey: queryKeys.environments(effectiveWorkspaceId),
+      });
+    }
+  }, [effectiveEnvironmentId, stored.environmentId, effectiveWorkspaceId, qc]);
 
   // ── Mutations ────────────────────────────────────────────────────────────
 
   const createWorkspace = useMutation({
     ...createWorkspaceMutation,
     onSuccess: (ws: Workspace) => {
-      if (typeof window !== "undefined") {
-        localStorage.setItem(ACTIVE_WORKSPACE_KEY, ws.id);
-      }
-      qc.invalidateQueries({ queryKey: ["workspaces"] });
+      setActiveWorkspace(ws.id);
+      qc.invalidateQueries({ queryKey: queryKeys.workspaces() });
       toast.success(`Workspace "${ws.name}" created`);
     },
     onError: () => toast.error("Failed to create workspace"),
@@ -137,10 +147,12 @@ export function useOnboarding() {
   const createEnvironment = useMutation({
     ...createEnvironmentMutation,
     onSuccess: (env: Environment) => {
-      if (typeof window !== "undefined") {
-        localStorage.setItem(ACTIVE_ENVIRONMENT_KEY, env.id);
+      setActiveEnvironment(env.id);
+      if (effectiveWorkspaceId) {
+        qc.invalidateQueries({
+          queryKey: queryKeys.environments(effectiveWorkspaceId),
+        });
       }
-      qc.invalidateQueries({ queryKey: ["environments"] });
       toast.success(`Environment "${env.name}" created`);
     },
     onError: () => toast.error("Failed to create environment"),
@@ -149,15 +161,13 @@ export function useOnboarding() {
   // ── Step machine ─────────────────────────────────────────────────────────
 
   const isLoading =
-    workspacesLoading || (!!effectiveWorkspaceId && environmentsLoading);
+    workspacesLoading || (Boolean(effectiveWorkspaceId) && environmentsLoading);
   const isErrored = workspacesErrored || environmentsErrored;
-  const hasWorkspace = !!effectiveWorkspaceId;
-  const hasEnvironment = !!effectiveEnvironmentId;
 
   let step: OnboardingStep = "idle";
   if (!isLoading && !isErrored) {
-    if (!hasWorkspace) step = "workspace";
-    else if (!hasEnvironment) step = "environment";
+    if (!effectiveWorkspaceId) step = "workspace";
+    else if (!effectiveEnvironmentId) step = "environment";
     else step = "ready";
   }
 

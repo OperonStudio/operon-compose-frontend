@@ -1,8 +1,8 @@
-import { getPageContentOptions } from "#/common/api/content-api";
-import { useActiveEnvironment } from "#/modules/environments/hooks";
 import { useQuery } from "@tanstack/react-query";
 import { useLocation, useNavigate } from "@tanstack/react-router";
-import React from "react";
+import type React from "react";
+import { getPageContentOptions } from "#/common/api/content-api";
+import { useActiveEnvironment } from "#/modules/environments/hooks";
 
 export const useHeader = () => {
   const location = useLocation();

@@ -5,6 +5,9 @@ export const contextListContainerStyle = css({
   display: "flex",
   flexDirection: "column",
   gap: "12px",
+  "@media (max-width: 768px)": {
+    padding: "16px",
+  },
 });
 
 export const contextItemStyle = css({
@@ -15,6 +18,12 @@ export const contextItemStyle = css({
   backgroundColor: "var(--operon-color-surface)",
   border: "1px solid var(--operon-color-border)",
   borderRadius: "12px",
+  "@media (max-width: 640px)": {
+    flexDirection: "column",
+    alignItems: "flex-start",
+    gap: "10px",
+    padding: "14px 16px",
+  },
 });
 
 export const contextNameStyle = css({

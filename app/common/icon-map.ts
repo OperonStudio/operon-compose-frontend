@@ -2,7 +2,10 @@ import type { IconProps } from "@operonstudio/icons";
 import * as OperonIcons from "@operonstudio/icons";
 import type { ComponentType } from "react";
 
-const iconMap = OperonIcons as Record<string, any>;
+const iconMap = OperonIcons as unknown as Record<
+  string,
+  ComponentType<IconProps>
+>;
 
 export const resolveIcon = (
   iconName: string | undefined,

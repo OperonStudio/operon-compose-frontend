@@ -4,7 +4,14 @@ export function getContext() {
   const queryClient = new QueryClient({
     defaultOptions: {
       queries: {
-        retry: false,
+        // Enterprise defaults: keep data fresh for 30s and cached for 5 minutes
+        // so screen-to-screen navigation feels instant, but a single tab
+        // return still gets fresh values. Per-query overrides (e.g. content
+        // API) can bump these when appropriate.
+        retry: 1,
+        staleTime: 30_000,
+        gcTime: 5 * 60_000,
+        refetchOnWindowFocus: false,
       },
       mutations: {
         retry: false,
@@ -16,4 +23,4 @@ export function getContext() {
     queryClient,
   };
 }
-export default function TanstackQueryProvider() { }
+export default function TanstackQueryProvider() {}

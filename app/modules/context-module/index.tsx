@@ -1,20 +1,27 @@
-import { getPageContentOptions } from "#/common/api/content-api";
-import { ConfirmModal } from "#/components/confirm-modal";
-import { useHeaderActions } from "#/contexts/header-actions";
 import { ChevronDown, FileEdit, X } from "@operonstudio/icons";
+
+/** One entry in the CMS-driven "variable type" dropdown. */
+interface TypeOption {
+  value: string;
+  label: string;
+}
+
 import { Box, Button, Chip, Dropdown, Input, Modal } from "@operonstudio/ui";
-import {
-  useMutation,
-  useQuery,
-  useQueryClient,
-} from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
+import { getPageContentOptions } from "#/common/api/content-api";
+import type { ModalConfig } from "#/common/api/interfaces";
+import { activeScope, queryKeys } from "#/common/api/query-keys";
+import { useActiveScope } from "#/common/use-active-scope";
+import { ConfirmModal } from "#/components/confirm-modal";
+import { Field } from "#/components/field";
+import { useHeaderActions } from "#/contexts/header-actions";
 import {
+  type ContextVariable,
   createContextOptions,
   deleteContextOptions,
   getContextsOptions,
   updateContextOptions,
-  type ContextVariable,
 } from "./api";
 import * as classes from "./style";
 
@@ -30,8 +37,8 @@ const ContextModal = ({
   onClose: () => void;
   onSubmit: (name: string, type: string) => void;
   initialData?: ContextVariable | null;
-  modals: any;
-  typeOptions: any[];
+  modals?: Record<string, ModalConfig>;
+  typeOptions: TypeOption[];
 }) => {
   const [name, setName] = useState("");
   const [type, setType] = useState("string");
@@ -78,19 +85,12 @@ const ContextModal = ({
       }
     >
       <Box display="flex" direction="column" gap={16}>
-        <Box>
-          <label
-            style={{
-              fontSize: "14px",
-              fontWeight: 500,
-              marginBottom: "4px",
-              display: "block",
-              color: "var(--operon-color-text)",
-            }}
-          >
-            {modals?.create?.fields?.[0]?.label ?? "Name"}
-          </label>
+        <Field
+          label={modals?.create?.fields?.[0]?.label ?? "Name"}
+          htmlFor="context-variable-name"
+        >
           <Input
+            id="context-variable-name"
             placeholder={
               modals?.create?.fields?.[0]?.placeholder ?? "e.g. x-page-name"
             }
@@ -101,25 +101,18 @@ const ContextModal = ({
             }}
             autoFocus
           />
-        </Box>
-        <Box>
-          <label
-            style={{
-              fontSize: "14px",
-              fontWeight: 500,
-              marginBottom: "4px",
-              display: "block",
-              color: "var(--operon-color-text)",
-            }}
-          >
-            {modals?.create?.fields?.[1]?.label ?? "Type"}
-          </label>
+        </Field>
+        <Field
+          label={modals?.create?.fields?.[1]?.label ?? "Type"}
+          id="context-variable-type-label"
+        >
           <Dropdown
             containerStyle={{ width: "100%" }}
             onSelect={(val) => setType(val)}
             trigger={
               <Button
                 variant="outline"
+                aria-labelledby="context-variable-type-label"
                 style={{ width: "100%", justifyContent: "space-between" }}
               >
                 <Box display="flex" align="center">
@@ -131,17 +124,22 @@ const ContextModal = ({
             }
             items={typeOptions}
           />
-        </Box>
+        </Field>
       </Box>
     </Modal>
   );
 };
 
 export const ContextPage = () => {
+  // Subscribes to the active workspace and environment. The queries below
+  // are keyed by them, so this component has to re-render when they resolve.
+  useActiveScope();
   const queryClient = useQueryClient();
-  const { data: variables = [] } = useQuery(getContextsOptions);
+  const { data: variables = [] } = useQuery(getContextsOptions());
   const { data: pageData } = useQuery(getPageContentOptions("context"));
-  const typeOptions = (pageData?.content?.typeOptions as any[]) ?? [
+  const typeOptions = (pageData?.content?.typeOptions as
+    | TypeOption[]
+    | undefined) ?? [
     { value: "string", label: "String" },
     { value: "number", label: "Number" },
     { value: "boolean", label: "Boolean" },
@@ -156,21 +154,27 @@ export const ContextPage = () => {
   const createMutation = useMutation({
     ...createContextOptions,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["contexts"] });
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.contexts(activeScope().workspaceId),
+      });
     },
   });
 
   const updateMutation = useMutation({
     ...updateContextOptions,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["contexts"] });
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.contexts(activeScope().workspaceId),
+      });
     },
   });
 
   const deleteMutation = useMutation({
     ...deleteContextOptions,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["contexts"] });
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.contexts(activeScope().workspaceId),
+      });
       setDeleteId(null);
     },
   });

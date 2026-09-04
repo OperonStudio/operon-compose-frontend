@@ -1,7 +1,14 @@
 import { css } from "@morph-css/kit";
+import {
+  DESKTOP_QUERY,
+  PAGE_PADDING,
+  PAGE_PADDING_MOBILE,
+} from "#/common/layout";
 
 export const containerStyle = css({
-  padding: "32px 40px 64px",
+  padding: PAGE_PADDING_MOBILE,
+  boxSizing: "border-box",
+  [DESKTOP_QUERY]: { padding: PAGE_PADDING },
   maxWidth: "1100px",
   margin: "0 auto",
   width: "100%",
@@ -49,7 +56,6 @@ export const headerSubtitleStyle = css({
     fontSize: "13px",
   },
 });
-
 
 export const cardStyle = css({
   background: "var(--operon-color-surface)",

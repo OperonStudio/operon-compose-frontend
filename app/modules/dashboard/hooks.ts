@@ -1,51 +1,32 @@
-import { getPageContentOptions } from "#/common/api/content-api";
-import { resolveIcon } from "#/common/icon-map";
-import { formatBytes } from "#/libs/utils";
 import { useQuery } from "@tanstack/react-query";
-import React from "react";
-import { getUsageOptions } from "./api";
+import { useActiveScope } from "#/common/use-active-scope";
+import { getUsageDailyOptions, getUsageOptions } from "./api";
 
+const TREND_DAYS = 7;
+
+/**
+ * Workspace usage plus the recent daily trend.
+ *
+ * This used to also map a CMS-driven `statCards` array into React elements on
+ * every render. Nothing consumed it — the page has always laid its own figures
+ * out — so it has been dropped rather than left as a second, silently unused
+ * source of truth for the same numbers.
+ */
 export const useDashboard = () => {
-  const { data: usage } = useQuery({
-    ...getUsageOptions(),
-  });
-
-  const { data: pageData } = useQuery(getPageContentOptions("dashboard"));
-  const statCardConfigs = (pageData?.content?.statCards as any[]) ?? [];
-  const labels = pageData?.content?.labels;
-
-  const statCards =
-    usage && statCardConfigs
-      ? statCardConfigs.map((config: any) => {
-          const rawValue = (usage as Record<string, any>)[config.key] ?? 0;
-          let value = rawValue.toLocaleString();
-          let unit = undefined;
-
-          if (config.format === "bytes") {
-            const formatted = formatBytes(rawValue);
-            const parts = formatted.split(" ");
-            value = parts[0];
-            unit = parts[1];
-          }
-
-          const IconComponent = resolveIcon(config.icon);
-
-          return {
-            title: config.title,
-            value,
-            unit,
-            icon: React.createElement(IconComponent, {
-              size: 24,
-              color: config.color,
-            }),
-            bg: config.bg,
-          };
-        })
-      : [];
+  // Subscribes to the active workspace and environment. The queries below
+  // are keyed by them, so this component has to re-render when they resolve.
+  useActiveScope();
+  const usageQuery = useQuery(getUsageOptions());
+  const dailyQuery = useQuery(getUsageDailyOptions(TREND_DAYS));
 
   return {
-    usage,
-    statCards,
-    labels,
+    usage: usageQuery.data,
+    daily: dailyQuery.data ?? [],
+    isLoading: usageQuery.isLoading || dailyQuery.isLoading,
+    isError: usageQuery.isError || dailyQuery.isError,
+    refetch: () => {
+      usageQuery.refetch();
+      dailyQuery.refetch();
+    },
   };
 };

@@ -1,66 +1,57 @@
-import {
-  type Workspace,
-  createWorkspaceOptions,
-  getWorkspacesOptions,
-} from "#/components/workspace-switcher/api";
 import { toast } from "@operonstudio/ui";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "@tanstack/react-router";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
+import {
+  getActiveWorkspaceId,
+  setActiveWorkspace,
+} from "#/common/active-scope";
+import { queryKeys } from "#/common/api/query-keys";
+import {
+  createWorkspaceOptions,
+  getWorkspacesOptions,
+  type Workspace,
+} from "#/components/workspace-switcher/api";
 
-const ACTIVE_WORKSPACE_KEY = "operon_active_workspace_id";
-
-function getStoredWorkspaceId(): string | null {
-  if (typeof window === "undefined") return null;
-  return localStorage.getItem(ACTIVE_WORKSPACE_KEY);
-}
-
-function storeWorkspaceId(id: string) {
-  if (typeof window !== "undefined") {
-    localStorage.setItem(ACTIVE_WORKSPACE_KEY, id);
-  }
-}
+/**
+ * Routes that address a single project, collection or key. None of those ids
+ * exist in another workspace, so a switch has to leave them behind.
+ */
+const SCOPED_ROUTE_PREFIXES = ["/projects/", "/rule-engine/", "/api-keys/"];
 
 export function useActiveWorkspace() {
   const queryClient = useQueryClient();
   const router = useRouter();
-  const { data } = useQuery(getWorkspacesOptions);
-  const workspaces = data || [];
-  const [activeId, setActiveId] = useState<string | null>(getStoredWorkspaceId);
+  const { data: workspaces = [] } = useQuery(getWorkspacesOptions);
+  const [activeId, setActiveId] = useState<string | null>(getActiveWorkspaceId);
 
-  const handleRedirect = () => {
-    const pathname = router.state.location.pathname;
-    if (pathname.startsWith("/projects/")) router.navigate({ to: "/projects" });
-    else if (pathname.startsWith("/rule-engine/"))
-      router.navigate({ to: "/rule-engine" });
-    else if (pathname.startsWith("/api-keys/"))
-      router.navigate({ to: "/api-keys" });
-  };
+  const applyWorkspace = useCallback(
+    (id: string) => {
+      setActiveId(id);
+      // Also clears the active environment, which belonged to the workspace we
+      // are leaving.
+      setActiveWorkspace(id);
+      // Only this workspace's subtree is stale. Workspace-independent data —
+      // the CMS page copy, the workspace list itself — stays cached.
+      queryClient.invalidateQueries({ queryKey: queryKeys.workspace(id) });
+
+      const { pathname } = router.state.location;
+      const prefix = SCOPED_ROUTE_PREFIXES.find((p) => pathname.startsWith(p));
+      if (prefix) router.navigate({ to: prefix.slice(0, -1) });
+    },
+    [queryClient, router],
+  );
 
   useEffect(() => {
-    if (workspaces.length > 0) {
-      const isValid = workspaces.some((w) => w.id === activeId);
-      if (!isValid) {
-        const id = workspaces[0].id;
-        setActiveId(id);
-        storeWorkspaceId(id);
-        queryClient.invalidateQueries();
-        handleRedirect();
-      }
-    }
-  }, [workspaces, activeId, queryClient, router]);
+    if (workspaces.length === 0) return;
+    if (workspaces.some((w) => w.id === activeId)) return;
+    applyWorkspace(workspaces[0].id);
+  }, [workspaces, activeId, applyWorkspace]);
 
   const activeWorkspace =
     workspaces.find((w) => w.id === activeId) ?? workspaces[0] ?? null;
 
-  const switchWorkspace = (id: string) => {
-    setActiveId(id);
-    storeWorkspaceId(id);
-    queryClient.invalidateQueries();
-    handleRedirect();
-  };
-
-  return { workspaces, activeWorkspace, switchWorkspace };
+  return { workspaces, activeWorkspace, switchWorkspace: applyWorkspace };
 }
 
 export const useWorkspaceSwitcher = () => {
@@ -75,9 +66,7 @@ export const useWorkspaceSwitcher = () => {
     ...createWorkspaceOptions,
     onSuccess: (ws: Workspace) => {
       toast.success(`Workspace "${ws.name}" created`);
-      queryClient.invalidateQueries({
-        queryKey: getWorkspacesOptions.queryKey,
-      });
+      queryClient.invalidateQueries({ queryKey: queryKeys.workspaces() });
       switchWorkspace(ws.id);
       setIsCreating(false);
       setNewName("");
@@ -100,9 +89,13 @@ export const useWorkspaceSwitcher = () => {
     return () => document.removeEventListener("mousedown", handler);
   }, []);
 
-  const handleCreate = () => {
-    if (!newName.trim()) return;
-    createWorkspace({ name: newName.trim() });
+  // Takes the name so a caller holding its own draft — the shared switcher
+  // does — need not push it through this hook's state first and then wait a
+  // tick for the write to land.
+  const handleCreate = (name?: string) => {
+    const trimmed = (name ?? newName).trim();
+    if (!trimmed) return;
+    createWorkspace({ name: trimmed });
   };
 
   return {

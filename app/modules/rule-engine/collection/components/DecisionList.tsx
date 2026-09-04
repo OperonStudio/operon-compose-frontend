@@ -1,4 +1,4 @@
-import { ArrowRight, FileEdit, X, Zap } from "@operonstudio/icons";
+import { FileEdit, X } from "@operonstudio/icons";
 import { Box, Button, Chip } from "@operonstudio/ui";
 import type { Decision } from "../types";
 
@@ -14,74 +14,27 @@ export const DecisionList = ({
   onDeleteDecision,
 }: DecisionListProps) => {
   const getOutcomeBadge = (decision: Decision) => {
-    switch (decision.outcome) {
-      case "visible":
-        return (
-          <Chip
-            variant="subtle"
-            style={{
-              background: "rgba(51, 214, 166, 0.12)",
-              color: "#0D9A73",
-              fontWeight: 700,
-              fontSize: "11px",
-              textTransform: "uppercase",
-              letterSpacing: "0.05em",
-            }}
-          >
-            Visible
-          </Chip>
-        );
-      case "hidden":
-        return (
-          <Chip
-            variant="subtle"
-            style={{
-              background: "rgba(239, 68, 68, 0.12)",
-              color: "#DC2626",
-              fontWeight: 700,
-              fontSize: "11px",
-              textTransform: "uppercase",
-              letterSpacing: "0.05em",
-            }}
-          >
-            Hidden
-          </Chip>
-        );
-      case "redirect":
-        return (
-          <Chip
-            variant="subtle"
-            style={{
-              background: "rgba(61, 90, 254, 0.12)",
-              color: "#3D5AFE",
-              fontWeight: 700,
-              fontSize: "11px",
-              textTransform: "uppercase",
-              letterSpacing: "0.05em",
-            }}
-          >
-            Redirect
-          </Chip>
-        );
-      case "transform":
-        return (
-          <Chip
-            variant="subtle"
-            style={{
-              background: "rgba(255, 176, 32, 0.15)",
-              color: "#C97B12",
-              fontWeight: 700,
-              fontSize: "11px",
-              textTransform: "uppercase",
-              letterSpacing: "0.05em",
-            }}
-          >
-            Transform
-          </Chip>
-        );
-      default:
-        return null;
-    }
+    // The public outcome vocabulary was trimmed to visible/hidden — anything
+    // else is a legacy value we render as "Hidden" so admins can find and
+    // migrate it.
+    const isVisible = decision.outcome === "visible";
+    return (
+      <Chip
+        variant="subtle"
+        style={{
+          background: isVisible
+            ? "rgba(51, 214, 166, 0.12)"
+            : "rgba(239, 68, 68, 0.12)",
+          color: isVisible ? "#0D9A73" : "#DC2626",
+          fontWeight: 700,
+          fontSize: "11px",
+          textTransform: "uppercase",
+          letterSpacing: "0.05em",
+        }}
+      >
+        {isVisible ? "Visible" : "Hidden"}
+      </Chip>
+    );
   };
 
   return (
@@ -232,7 +185,14 @@ export const DecisionList = ({
                   </Chip>
                 ) : (
                   decision.conditions.map((cond, idx) => (
-                    <Box key={idx} display="flex" align="center" gap="8px">
+                    // Conditions have no id of their own; within one decision
+                    // the attribute/operator/value triple identifies the row.
+                    <Box
+                      key={`${cond.attribute}-${cond.operator}-${String(cond.value)}`}
+                      display="flex"
+                      align="center"
+                      gap="8px"
+                    >
                       {idx > 0 && (
                         <Box
                           style={{
@@ -268,44 +228,7 @@ export const DecisionList = ({
               </Box>
 
               {/* Outcome Extra Config Preview */}
-              {decision.outcome === "redirect" && decision.redirectUrl && (
-                <Box
-                  display="flex"
-                  align="center"
-                  gap="8px"
-                  style={{
-                    padding: "8px 12px",
-                    background: "rgba(61, 90, 254, 0.05)",
-                    border: "1px solid rgba(61, 90, 254, 0.2)",
-                    borderRadius: "6px",
-                    fontSize: "12px",
-                    color: "#3D5AFE",
-                    fontFamily: "var(--operon-typography-mono)",
-                  }}
-                >
-                  <ArrowRight size={14} /> Redirect Target:{" "}
-                  {decision.redirectUrl}
-                </Box>
-              )}
-
-              {decision.outcome === "transform" && decision.transformKey && (
-                <Box
-                  display="flex"
-                  align="center"
-                  gap="8px"
-                  style={{
-                    padding: "8px 12px",
-                    background: "rgba(255, 176, 32, 0.08)",
-                    border: "1px solid rgba(255, 176, 32, 0.25)",
-                    borderRadius: "6px",
-                    fontSize: "12px",
-                    color: "#C97B12",
-                    fontFamily: "var(--operon-typography-mono)",
-                  }}
-                >
-                  <Zap size={14} /> Transform Key: {decision.transformKey}
-                </Box>
-              )}
+              {/* redirect/transform previews were removed with the outcome trim. */}
             </Box>
           ))}
         </Box>

@@ -3,9 +3,11 @@ export interface Usage {
   workspaceId: string;
   month: string;
   apiRequests: number;
-  storageBytes: number;
+  /**
+   * Not measured. The API derives this as apiRequests * 128, so it is an
+   * estimate at best and must not be presented as a figure.
+   */
   bandwidthBytes: number;
-  activeUsers: number;
   projects: number;
   collections: number;
   apiKeys: number;

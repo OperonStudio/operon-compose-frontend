@@ -1,10 +1,12 @@
-import { getProjectsOptions } from "#/modules/project/api";
-import { getCollectionsOptions } from "#/modules/project/projectId/api";
 import { ChevronDown, ChevronRight } from "@operonstudio/icons";
 import { Box } from "@operonstudio/ui";
 import { useQuery } from "@tanstack/react-query";
 import { Link, Outlet, useParams } from "@tanstack/react-router";
 import { useState } from "react";
+import { useActiveScope } from "#/common/use-active-scope";
+import { getProjectsOptions } from "#/modules/project/api";
+import type { Project } from "#/modules/project/interface";
+import { getCollectionsOptions } from "#/modules/project/projectId/api";
 import * as classes from "./style";
 
 const ProjectSidebarItem = ({
@@ -12,7 +14,7 @@ const ProjectSidebarItem = ({
   activeProjectId,
   activeCollectionId,
 }: {
-  project: any;
+  project: Project;
   activeProjectId: string;
   activeCollectionId?: string;
 }) => {
@@ -83,13 +85,15 @@ const ProjectSidebarItem = ({
               Loading...
             </Box>
           )}
-          {collections?.map((col: any) => {
-            const isColActive = activeCollectionId === col.id;
+          {collections?.map((col) => {
+            if (!col.id) return null;
+            const collectionId = col.id;
+            const isColActive = activeCollectionId === collectionId;
             return (
               <Link
-                key={col.id}
+                key={collectionId}
                 to="/rule-engine/$projectId/$collectionId"
-                params={{ projectId: id, collectionId: col.id }}
+                params={{ projectId: id, collectionId }}
                 style={{ textDecoration: "none", display: "block" }}
               >
                 <Box
@@ -130,8 +134,14 @@ const ProjectSidebarItem = ({
 };
 
 export const RuleEngineLayout = () => {
-  const { data: projects, isLoading } = useQuery(getProjectsOptions);
-  const { projectId, collectionId } = useParams({ strict: false }) as any;
+  // Subscribes to the active workspace and environment. The queries below
+  // are keyed by them, so this component has to re-render when they resolve.
+  useActiveScope();
+  const { data: projects, isLoading } = useQuery(getProjectsOptions());
+  const { projectId, collectionId } = useParams({ strict: false }) as {
+    projectId?: string;
+    collectionId?: string;
+  };
 
   return (
     <Box {...classes.pageContainerStyle}>
@@ -151,7 +161,7 @@ export const RuleEngineLayout = () => {
             <ProjectSidebarItem
               key={project.id || project.name}
               project={project}
-              activeProjectId={projectId}
+              activeProjectId={projectId ?? ""}
               activeCollectionId={collectionId}
             />
           ))}

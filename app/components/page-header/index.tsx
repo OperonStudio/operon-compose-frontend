@@ -1,10 +1,10 @@
+import { Box, Button } from "@operonstudio/ui";
+import { useQuery } from "@tanstack/react-query";
+import { useLocation } from "@tanstack/react-router";
 import { getPageContentOptions } from "#/common/api/content-api";
 import type { PageAction } from "#/common/api/interfaces";
 import { resolveIcon } from "#/common/icon-map";
 import { useHeaderActionHandler } from "#/contexts/header-actions";
-import { Box, Button } from "@operonstudio/ui";
-import { useQuery } from "@tanstack/react-query";
-import { useLocation } from "@tanstack/react-router";
 import * as classes from "./style";
 
 function ActionButton({ action }: { action: PageAction }) {
@@ -24,13 +24,26 @@ function ActionButton({ action }: { action: PageAction }) {
   );
 }
 
+/**
+ * Maps a route to the content collection holding that page's title, subtitle
+ * and header actions.
+ *
+ * Detail routes need their own entry. `/projects/:projectId` lists a project's
+ * collections and registers an "Add collection" action, but it was being served
+ * the `projects` header, so the page showed a "Create Project" button that the
+ * detail page never registers a handler for and that therefore rendered
+ * permanently disabled.
+ */
+function contentKeyForPath(pathname: string): string {
+  const [, section, ...rest] = pathname.split("/");
+  if (!section) return "dashboard";
+  if (section === "projects" && rest.some(Boolean)) return "project-details";
+  return section;
+}
+
 export function PageHeader() {
   const location = useLocation();
-  let collectionId = location.pathname.split("/")[1];
-
-  // if (collectionId === "projects" && location.pathname.split("/").length > 2) {
-  //   collectionId = "project-details";
-  // }
+  const collectionId = contentKeyForPath(location.pathname);
 
   const { data: pageData } = useQuery(getPageContentOptions(collectionId));
 

@@ -7,8 +7,8 @@ import type {
 
 export const ProjectDetailsPage: PageContent = {
   page: {
-    title: "Project Details",
-    subtitle: "Manage your project collections and settings",
+    title: "Collections",
+    subtitle: "Content served by this project's delivery API",
     actions: [
       {
         id: "add-new-collection",
@@ -108,7 +108,7 @@ export const ProjectsPage: PageContent = {
     subtitle: "Manage your Operon projects",
     actions: [
       {
-        id: "create",
+        id: "create_project",
         label: "Create Project",
         icon: "Plus",
         variant: "primary",
@@ -142,7 +142,7 @@ export const EnvironmentsPage: PageContent = {
     subtitle: "Manage deployment environments",
     actions: [
       {
-        id: "create-environment-button",
+        id: "create_env",
         label: "Create Environment",
         icon: "Plus",
         variant: "primary",
@@ -180,7 +180,7 @@ export const ContextModulePage: PageContent = {
     subtitle: "Define global context variables for your rules",
     actions: [
       {
-        id: "add-context-button",
+        id: "create_context",
         label: "Add Variable",
         icon: "Plus",
         variant: "primary",

@@ -1,5 +1,5 @@
-import { Box, Button, Chip } from "@operonstudio/ui";
 import { X } from "@operonstudio/icons";
+import { Box, Button, Chip } from "@operonstudio/ui";
 import type { ContextVariable } from "../../../context-module/api";
 
 interface AttributesSectionProps {
@@ -102,7 +102,8 @@ export const AttributesSection = ({
                   transition: "background 0.2s ease",
                 }}
                 onMouseOver={(e) => {
-                  e.currentTarget.style.background = "var(--operon-color-surface-raised)";
+                  e.currentTarget.style.background =
+                    "var(--operon-color-surface-raised)";
                 }}
                 onMouseOut={(e) => {
                   e.currentTarget.style.background = "transparent";

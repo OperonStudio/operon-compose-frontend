@@ -1,23 +1,23 @@
 import { createClient } from "@operonstudio/request";
-import { withLogger, withAuth } from "@operonstudio/request/middleware";
+import { withAuth, withLogger } from "@operonstudio/request/middleware";
 
 export const operonApiClient = createClient({
-  baseURL: import.meta.env.DEV
-    ? (import.meta.env.VITE_OPERON_COMPOSE_BACKEND_URL ??
-      "http://localhost:8080")
-    : "",
+  baseURL: "",
 });
 
+/**
+ * The console reads its own page copy through the public delivery API, which
+ * authenticates with a project key. Every other call is authenticated by the
+ * session cookie and scoped by ids in the path.
+ *
+ * Nothing else is attached here: `x-workspace-id` and `x-environment-id` used
+ * to be sent on every request, but no handler ever read them — they only cost a
+ * CORS preflight, because a custom header makes the request non-simple.
+ */
 operonApiClient.use(async (ctx, next) => {
-  if (typeof window !== "undefined") {
-    const workspaceId = localStorage.getItem("operon_active_workspace_id");
-    if (workspaceId) {
-      ctx.request.headers.set("x-workspace-id", workspaceId);
-    }
-    const environmentId = localStorage.getItem("operon_active_environment_id");
-    if (environmentId) {
-      ctx.request.headers.set("x-environment-id", environmentId);
-    }
+  const apiKey = import.meta.env.VITE_OPERON_KEY;
+  if (apiKey) {
+    ctx.request.headers.set("x-Operon-key", apiKey);
   }
   return await next(ctx);
 });

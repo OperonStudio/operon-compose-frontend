@@ -1,15 +1,13 @@
-import { getPageContentOptions } from "#/common/api/content-api";
-import { resolveIcon } from "#/common/icon-map";
-import { ConfirmModal } from "#/components/confirm-modal";
-import { useHeaderActions } from "#/contexts/header-actions";
 import { FileEdit, Plus, X } from "@operonstudio/icons";
 import { Box, Button, toast } from "@operonstudio/ui";
-import {
-  useMutation,
-  useQuery,
-  useQueryClient,
-} from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
+import { getPageContentOptions } from "#/common/api/content-api";
+import { activeScope, queryKeys } from "#/common/api/query-keys";
+import { resolveIcon } from "#/common/icon-map";
+import { useActiveScope } from "#/common/use-active-scope";
+import { ConfirmModal } from "#/components/confirm-modal";
+import { useHeaderActions } from "#/contexts/header-actions";
 import {
   createEnvironmentOptions,
   deleteEnvironmentOptions,
@@ -21,6 +19,9 @@ import * as classes from "./style";
 import type { Environment } from "./types";
 
 export const EnvironmentsPage = () => {
+  // Subscribes to the active workspace and environment. The queries below
+  // are keyed by them, so this component has to re-render when they resolve.
+  useActiveScope();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedEnvironment, setSelectedEnvironment] =
     useState<Environment | null>(null);
@@ -28,10 +29,10 @@ export const EnvironmentsPage = () => {
 
   const queryClient = useQueryClient();
 
-  const { data: environments, isLoading } = useQuery(getEnvironmentsOptions);
-  const { data: pageData } = useQuery(
-    getPageContentOptions("environments"),
+  const { data: environments = [], isLoading } = useQuery(
+    getEnvironmentsOptions(),
   );
+  const { data: pageData } = useQuery(getPageContentOptions("environments"));
 
   const emptyState = pageData?.content?.emptyState;
   const modals = pageData?.modals;
@@ -42,7 +43,7 @@ export const EnvironmentsPage = () => {
     onSuccess: () => {
       toast.success("Environment created successfully!");
       queryClient.invalidateQueries({
-        queryKey: getEnvironmentsOptions.queryKey,
+        queryKey: queryKeys.environments(activeScope().workspaceId),
       });
     },
     onError: () => toast.error("Failed to create environment."),
@@ -53,7 +54,7 @@ export const EnvironmentsPage = () => {
     onSuccess: () => {
       toast.success("Environment updated successfully!");
       queryClient.invalidateQueries({
-        queryKey: getEnvironmentsOptions.queryKey,
+        queryKey: queryKeys.environments(activeScope().workspaceId),
       });
     },
     onError: () => toast.error("Failed to update environment."),
@@ -64,7 +65,7 @@ export const EnvironmentsPage = () => {
     onSuccess: () => {
       toast.success("Environment deleted successfully!");
       queryClient.invalidateQueries({
-        queryKey: getEnvironmentsOptions.queryKey,
+        queryKey: queryKeys.environments(activeScope().workspaceId),
       });
       setEnvToDelete(null);
     },
@@ -149,12 +150,13 @@ export const EnvironmentsPage = () => {
                 maxWidth: "420px",
                 lineHeight: 1.6,
               }}
-              dangerouslySetInnerHTML={{
-                __html:
-                  emptyState?.description ??
-                  "Environments represent deployment targets like <strong>development</strong>, <strong>staging</strong>, or <strong>production</strong>. You must create at least one environment before you can generate API keys for your projects.",
-              }}
-            />
+            >
+              {/* Rendered as text: this copy comes from a Compose collection,
+                  which any workspace editor can change, so it must not be able
+                  to inject markup into the console. */}
+              {emptyState?.description ??
+                "Environments are deployment targets such as development, staging or production. Every project lives inside one, and you need at least one before you can generate API keys."}
+            </Box>
           </Box>
           <Button
             onClick={() => {

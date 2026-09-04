@@ -1,215 +1,253 @@
+import { Copy } from "@operonstudio/icons";
+import { Box, Button, Tabs, toast } from "@operonstudio/ui";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useParams } from "@tanstack/react-router";
+import { useState } from "react";
+import { getActiveScope } from "#/common/active-scope";
+import { queryKeys } from "#/common/api/query-keys";
+import { useActiveScope } from "#/common/use-active-scope";
 import { PromptModal } from "#/components/prompt-modal";
 import { useHeaderActions } from "#/contexts/header-actions";
-import { getApiKeysOptions } from "#/modules/api-keys/api";
 import { useActiveEnvironment } from "#/modules/environments/hooks";
-import { Copy } from "@operonstudio/icons";
-import { Box, Button, Dropdown, Sidebar, Textarea, toast } from "@operonstudio/ui";
-import {
-  useMutation,
-  useQuery,
-  useQueryClient,
-} from "@tanstack/react-query";
-import { useParams } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
 import {
   type Collection,
   createCollectionOptions,
+  getCollectionOptions,
   getCollectionsOptions,
-  updateCollectionOptions,
 } from "./api";
+import { ContentEditor } from "./components/ContentEditor";
+import { HistoryPanel } from "./components/HistoryPanel";
+import { PromotePanel } from "./components/PromotePanel";
+import {
+  getDiffOptions,
+  getVersionsOptions,
+  promoteOptions,
+  rollbackOptions,
+  saveVersionOptions,
+  type Variant,
+} from "./content-api";
 import * as classes from "./style";
 
+const DELIVERY_BASE_URL =
+  import.meta.env.VITE_OPERON_COMPOSE_BACKEND_URL ??
+  "https://operon-compose-backend.onrender.com";
+
 export const ProjectIdPage = () => {
+  // Subscribes to the active workspace and environment. The queries below
+  // are keyed by them, so this component has to re-render when they resolve.
+  useActiveScope();
   const { projectId } = useParams({ from: "/projects/$projectId/" });
   const queryClient = useQueryClient();
-  const { environments } = useActiveEnvironment();
+  const { environments, activeEnvironment } = useActiveEnvironment();
 
-  // Fetch API keys to include in the copied delivery URL
-  const { data: projectsWithKeys = [] } = useQuery(getApiKeysOptions());
-  const apiKeysForThisProject =
-    projectsWithKeys.find((p) => p.id === projectId)?.keys ?? [];
+  const { data: collections = [] } = useQuery(getCollectionsOptions(projectId));
 
-  const { data: collections = [] } = useQuery(
-    getCollectionsOptions(projectId),
+  const [activeCollectionId, setActiveCollectionId] = useState<string | null>(
+    null,
   );
-
-  const [activeCollection, setActiveCollection] = useState<Collection | null>(
-    collections[0] || null,
-  );
-  const [schemaText, setSchemaText] = useState("");
   const [isPromptOpen, setIsPromptOpen] = useState(false);
+  const [promoteTarget, setPromoteTarget] = useState<string | null>(null);
+
+  // Derive the selection from the fetched list rather than snapshotting it:
+  // `collections` is empty on first render, so a state initialiser would pin
+  // the selection to null and leave the editor blank until the user clicked.
+  const selected: Collection | null =
+    collections.find((c) => c.id === activeCollectionId) ??
+    collections[0] ??
+    null;
+  const collectionId = selected?.id ?? "";
+
+  const { data: view } = useQuery(
+    getCollectionOptions(projectId, collectionId),
+  );
+  const { data: versions = [], isLoading: versionsLoading } = useQuery(
+    getVersionsOptions(projectId, collectionId),
+  );
+  const { data: diff, isLoading: diffLoading } = useQuery(
+    getDiffOptions(projectId, collectionId, promoteTarget),
+  );
+
+  // Content, history and the diff all move together, so they are invalidated
+  // together after any write.
+  const refreshContent = () => {
+    const { workspaceId, environmentId } = getActiveScope();
+    queryClient.invalidateQueries({
+      queryKey: queryKeys.collections(workspaceId, environmentId, projectId),
+    });
+  };
 
   const createCollection = useMutation({
     ...createCollectionOptions(projectId),
-    onSuccess: (data: any) => {
-      queryClient.invalidateQueries({
-        queryKey: ["projects", projectId, "collections"],
-      });
-      setActiveCollection(data);
+    onSuccess: (created) => {
+      refreshContent();
+      if (created.id) setActiveCollectionId(created.id);
     },
+    onError: (err: Error) =>
+      toast.error(err.message || "Could not create the collection"),
   });
 
-  const updateCollection = useMutation({
-    ...updateCollectionOptions(projectId, activeCollection?.id || ""),
-    onSuccess: () => {
-      queryClient.invalidateQueries({
-        queryKey: ["projects", projectId, "collections"],
-      });
-      toast.success("Collection saved!");
+  const saveVersion = useMutation({
+    ...saveVersionOptions(projectId, collectionId),
+    onSuccess: (published) => {
+      refreshContent();
+      toast.success(`Published v${published.version}`);
     },
+    onError: (err: Error) => toast.error(err.message || "Could not publish"),
+  });
+
+  const promote = useMutation({
+    ...promoteOptions(projectId, collectionId),
+    onSuccess: (published) => {
+      refreshContent();
+      const name =
+        environments.find((e) => e.id === published.environmentId)?.name ??
+        "the target environment";
+      toast.success(`Promoted to ${name} as v${published.version}`);
+    },
+    onError: (err: Error) => toast.error(err.message || "Could not promote"),
+  });
+
+  const rollback = useMutation({
+    ...rollbackOptions(projectId, collectionId),
+    onSuccess: (published) => {
+      refreshContent();
+      toast.success(`Restored as v${published.version}`);
+    },
+    onError: (err: Error) => toast.error(err.message || "Could not restore"),
   });
 
   useHeaderActions({
-    "add-new-collection": () => {
-      setIsPromptOpen(true);
-    },
+    "add-new-collection": () => setIsPromptOpen(true),
   });
 
-  const handleCreateCollection = (name: string) => {
-    const id = name.toLowerCase().replace(/[^a-z0-9]+/g, "-");
-    (createCollection.mutate as any)({ id, name, data: {} });
-  };
+  // A project spans every environment and a collection keeps one name, so this
+  // URL is the same everywhere. Only the API key differs, and the key is what
+  // selects which environment's content comes back.
+  //
+  // The key is never in the URL: keys are stored hashed, and a secret in a URL
+  // ends up in browser history, proxy logs and referrer headers.
+  const deliveryUrl = selected
+    ? `${DELIVERY_BASE_URL}/api/content/${projectId}/${collectionId}`
+    : "";
 
-  useEffect(() => {
-    if (activeCollection && activeCollection.data) {
-      setSchemaText(JSON.stringify(activeCollection.data, null, 2));
-    } else {
-      setSchemaText("{}");
-    }
-  }, [activeCollection]);
-
-  const handleSave = () => {
-    if (!activeCollection) return;
-    try {
-      const schema = JSON.parse(schemaText);
-      updateCollection.mutate(schema);
-    } catch (e) {
-      toast.error("Invalid JSON format");
-    }
-  };
-
-  const handleCopyApiUrl = (environmentId: string) => {
-    if (!activeCollection) return;
-
-    // Find the API key value for this environment
-    const apiKey = apiKeysForThisProject.find(
-      (k) => k.environment === environmentId || (k as any).environmentId === environmentId,
-    );
-    const baseUrl =
-      import.meta.env.VITE_OPERON_COMPOSE_BACKEND_URL ??
-      "https://operon-compose-backend.onrender.com";
-    let url = `${baseUrl}/api/content/${projectId}/${activeCollection.id}?environmentId=${environmentId}`;
-    if (apiKey) {
-      url += `&x-Operon-key=${apiKey.value}`;
-    }
-    navigator.clipboard.writeText(url);
+  const copyApiUrl = () => {
+    if (!deliveryUrl) return;
+    navigator.clipboard.writeText(deliveryUrl);
     toast.success(
-      apiKey
-        ? "Copied API URL with key!"
-        : "Copied URL (no API key found for this env)",
+      "Copied. Send your API key as an x-Operon-key header when you call it.",
     );
   };
+
+  const variants: Variant[] = view?.variants?.length
+    ? view.variants
+    : [{ key: "default", data: {} }];
 
   return (
     <Box {...classes.pageContainerStyle}>
-      <Sidebar
-        variant="permanent"
-        placement="left"
-        isOpen={true}
-        onClose={() => {}}
-        {...classes.sidebarStyle}
-      >
-        <Box
-          display="flex"
-          align="center"
-          justify="space-between"
-          style={{ marginBottom: "16px", padding: "0 8px" }}
-        >
-          <Box {...classes.sidebarTitleStyle}>Collections</Box>
-        </Box>
-
+      <aside {...classes.sidebarStyle}>
+        <Box {...classes.sidebarTitleStyle}>Collections</Box>
         <Box {...classes.collectionListStyle}>
-          {collections.map((col) => (
-            <Box
-              key={col.id}
-              {...classes.collectionItemStyle}
-              style={{
-                backgroundColor:
-                  activeCollection?.id === col.id
-                    ? "var(--operon-color-surface-raised, #f0f0f0)"
+          {collections.map((col) => {
+            const isActive = col.id === collectionId;
+            return (
+              <Box
+                key={col.id}
+                {...classes.collectionItemStyle}
+                style={{
+                  backgroundColor: isActive
+                    ? "var(--operon-color-surface-raised)"
                     : undefined,
-                color:
-                  activeCollection?.id === col.id
+                  color: isActive ? "var(--operon-color-primary)" : undefined,
+                  borderColor: isActive
                     ? "var(--operon-color-primary)"
                     : undefined,
-                fontWeight: activeCollection?.id === col.id ? "500" : "normal",
-              }}
-              onClick={() => setActiveCollection(col)}
-            >
-              <Box display="flex" align="center" gap={8}>
+                }}
+                onClick={() => col.id && setActiveCollectionId(col.id)}
+              >
                 {col.name}
               </Box>
-            </Box>
-          ))}
+            );
+          })}
         </Box>
-      </Sidebar>
+      </aside>
 
       <Box {...classes.contentAreaStyle}>
-        {activeCollection ? (
-          <Box
-            display="flex"
-            direction="column"
-            style={{ height: "100%", gap: "24px" }}
-          >
-            <Box display="flex" justify="space-between" align="center">
-              <Box {...classes.titleStyle}>{activeCollection.name}</Box>
-              <Box display="flex" align="center" gap={12}>
-                <Dropdown
-                  onSelect={handleCopyApiUrl}
-                  placement="bottom-end"
-                  trigger={
-                    <Button variant="outline">
-                      <Copy size={16} />
-                    </Button>
-                  }
-                  items={environments.map((env) => ({
-                    value: env.id,
-                    label: env.name,
-                  }))}
-                />
-                <Button
-                  onClick={handleSave}
-                  disabled={updateCollection.isPending}
-                >
-                  {updateCollection.isPending ? "Saving..." : "Save Schema"}
-                </Button>
+        {selected ? (
+          <Box {...classes.workspaceStyle}>
+            <Box {...classes.toolbarStyle}>
+              <Box {...classes.toolbarTitleGroupStyle}>
+                <Box {...classes.titleStyle}>{selected.name}</Box>
+                {/* Which environment you are editing is the single most
+                    important thing to be sure of on this screen. */}
+                <Box {...classes.envBadgeStyle}>
+                  {activeEnvironment?.name ?? "no environment"}
+                </Box>
               </Box>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={copyApiUrl}
+                title={deliveryUrl}
+                style={{ gap: 6 }}
+              >
+                <Copy size={15} /> Copy API URL
+              </Button>
             </Box>
-            <Box style={{ flex: 1, display: "flex", flexDirection: "column" }}>
-              <Textarea
-                fullHeight
-                placeholder='Paste your JSON content here e.g. {"title": "Hello", "visible": true}'
-                style={{
-                  resize: "none",
-                  minHeight: "300px",
-                  fontFamily: "monospace",
-                }}
-                value={schemaText}
-                onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
-                  setSchemaText(e.target.value)
-                }
-              />
-            </Box>
+
+            <Tabs
+              style={{ width: "100%" }}
+              tabs={[
+                {
+                  label: "Content",
+                  content: (
+                    <ContentEditor
+                      variants={variants}
+                      version={view?.version ?? 0}
+                      isSaving={saveVersion.isPending}
+                      onSave={(next, note) =>
+                        saveVersion.mutate({ variants: next, note })
+                      }
+                    />
+                  ),
+                },
+                {
+                  label: `History${versions.length ? ` (${versions.length})` : ""}`,
+                  content: (
+                    <HistoryPanel
+                      projectId={projectId}
+                      collectionId={collectionId}
+                      versions={versions}
+                      isLoading={versionsLoading}
+                      isRollingBack={rollback.isPending}
+                      onRollback={(version) => rollback.mutate({ version })}
+                    />
+                  ),
+                },
+                {
+                  label: "Promote",
+                  content: (
+                    <PromotePanel
+                      environments={environments}
+                      currentEnvironmentId={activeEnvironment?.id ?? ""}
+                      target={promoteTarget}
+                      onTargetChange={setPromoteTarget}
+                      diff={diff}
+                      isLoadingDiff={diffLoading}
+                      isPromoting={promote.isPending}
+                      onPromote={() =>
+                        promoteTarget &&
+                        promote.mutate({ targetEnvironmentId: promoteTarget })
+                      }
+                    />
+                  ),
+                },
+              ]}
+            />
           </Box>
         ) : (
-          <Box
-            display="flex"
-            direction="column"
-            align="center"
-            justify="center"
-            style={{ height: "100%", color: "var(--operon-color-text-muted)" }}
-          >
-            Select a collection from the sidebar or click "Add New Collection".
+          <Box {...classes.emptyStyle}>
+            This project has no collections yet. Add one to start serving
+            content.
           </Box>
         )}
       </Box>
@@ -217,10 +255,12 @@ export const ProjectIdPage = () => {
       <PromptModal
         isOpen={isPromptOpen}
         onClose={() => setIsPromptOpen(false)}
-        onSubmit={handleCreateCollection}
-        title="Add New Collection"
-        message="Enter a name for the new collection:"
-        placeholder="Collection Name"
+        onSubmit={(name) =>
+          createCollection.mutate({ name: name.trim(), data: {} })
+        }
+        title="Add a collection"
+        message="Collections are addressed by name in the delivery URL, so pick something stable."
+        placeholder="hero"
       />
     </Box>
   );

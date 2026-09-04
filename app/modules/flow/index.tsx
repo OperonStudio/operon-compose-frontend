@@ -1,8 +1,3 @@
-import { getPageContentOptions } from "#/common/api/content-api";
-import { resolveIcon } from "#/common/icon-map";
-import { getProjectsOptions } from "#/modules/project/api";
-import { getCollectionsOptions } from "#/modules/project/projectId/api";
-import { getRulesOptions } from "#/modules/rule-engine/collection/api";
 import {
   Boxes,
   ChevronDown,
@@ -13,10 +8,20 @@ import {
 import { Box, Button, Dropdown, FlowBoard } from "@operonstudio/ui";
 import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
+import { getPageContentOptions } from "#/common/api/content-api";
+import { resolveIcon } from "#/common/icon-map";
+import { useActiveScope } from "#/common/use-active-scope";
+import { getProjectsOptions } from "#/modules/project/api";
+import { getCollectionsOptions } from "#/modules/project/projectId/api";
+import { getDecisionsOptions } from "#/modules/rule-engine/collection/api";
+import { Simulator } from "./components/Simulator";
 import * as classes from "./style";
 
 export const FlowPage = () => {
-  const { data: projects } = useQuery(getProjectsOptions);
+  // Subscribes to the active workspace and environment. The queries below
+  // are keyed by them, so this component has to re-render when they resolve.
+  useActiveScope();
+  const { data: projects } = useQuery(getProjectsOptions());
   const { data: pageData } = useQuery(getPageContentOptions("flow"));
 
   const labels = pageData?.content?.labels;
@@ -32,15 +37,15 @@ export const FlowPage = () => {
   });
 
   const { data: rules } = useQuery({
-    ...getRulesOptions(selectedProjectId, selectedCollectionId),
-    enabled: !!selectedProjectId && !!selectedCollectionId,
+    ...getDecisionsOptions(selectedProjectId, selectedCollectionId || null),
+    enabled: Boolean(selectedProjectId && selectedCollectionId),
   });
 
   const selectedProject = projects?.find(
-    (p: any) => (p.id || p.name) === selectedProjectId,
+    (p) => (p.id || p.name) === selectedProjectId,
   );
   const selectedCollection = collections?.find(
-    (c: any) => c.id === selectedCollectionId,
+    (c) => c.id === selectedCollectionId,
   );
 
   return (
@@ -88,12 +93,10 @@ export const FlowPage = () => {
                   <ChevronDown size={14} />
                 </Button>
               }
-              items={
-                projects?.map((p: any) => ({
-                  value: p.id || p.name,
-                  label: p.name,
-                })) || []
-              }
+              items={(projects ?? []).map((p) => ({
+                value: p.id || p.name,
+                label: p.name,
+              }))}
             />
           </Box>
 
@@ -135,12 +138,10 @@ export const FlowPage = () => {
                   <ChevronDown size={14} />
                 </Button>
               }
-              items={
-                collections?.map((c: any) => ({
-                  value: c.id,
-                  label: c.name,
-                })) || []
-              }
+              items={(collections ?? []).map((c) => ({
+                value: c.id ?? "",
+                label: c.name,
+              }))}
             />
           </Box>
         </Box>
@@ -230,6 +231,15 @@ export const FlowPage = () => {
                 { id: "e3-4", source: "3", target: "4" },
               ]}
               height="100%"
+            />
+          </Box>
+
+          {/* The board shows the shape of the flow. This shows what a real
+              request would actually do with it. */}
+          <Box style={{ marginTop: "24px" }}>
+            <Simulator
+              projectId={selectedProjectId}
+              collectionId={selectedCollectionId}
             />
           </Box>
         </Box>

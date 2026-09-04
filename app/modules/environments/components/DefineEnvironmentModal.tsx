@@ -1,5 +1,6 @@
 import { Box, Button, Input, Modal, toast } from "@operonstudio/ui";
 import { useEffect, useState } from "react";
+import { Field } from "#/components/field";
 import type { Environment } from "../types";
 
 interface DefineEnvironmentModalProps {
@@ -16,7 +17,9 @@ export const DefineEnvironmentModal = ({
   onSave,
 }: DefineEnvironmentModalProps) => {
   const [name, setName] = useState(environment?.name || "");
-  const [description, setDescription] = useState(environment?.description || "");
+  const [description, setDescription] = useState(
+    environment?.description || "",
+  );
 
   useEffect(() => {
     if (isOpen) {
@@ -30,7 +33,7 @@ export const DefineEnvironmentModal = ({
       toast.error("Please enter an environment name.");
       return;
     }
-    
+
     if (onSave) {
       onSave({
         id: environment?.id,
@@ -82,42 +85,22 @@ export const DefineEnvironmentModal = ({
           }}
         >
           <Box display="flex" direction="column" gap="20px">
-            <Box>
-              <label
-                style={{
-                  display: "block",
-                  fontSize: "13px",
-                  fontWeight: 600,
-                  color: "var(--operon-color-text)",
-                  marginBottom: "8px",
-                }}
-              >
-                Environment Name
-              </label>
+            <Field label="Environment name" htmlFor="environment-name" required>
               <Input
+                id="environment-name"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                placeholder="e.g., Staging, Production"
+                placeholder="e.g. staging, production"
               />
-            </Box>
-            <Box>
-              <label
-                style={{
-                  display: "block",
-                  fontSize: "13px",
-                  fontWeight: 600,
-                  color: "var(--operon-color-text)",
-                  marginBottom: "8px",
-                }}
-              >
-                Description
-              </label>
+            </Field>
+            <Field label="Description" htmlFor="environment-description">
               <Input
+                id="environment-description"
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
-                placeholder="Enter a brief description..."
+                placeholder="What this environment is for"
               />
-            </Box>
+            </Field>
           </Box>
         </Box>
       </Box>

@@ -1,13 +1,11 @@
+import { Box, Button } from "@operonstudio/ui";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useState } from "react";
 import { getPageContentOptions } from "#/common/api/content-api";
+import { activeScope, queryKeys } from "#/common/api/query-keys";
+import { useActiveScope } from "#/common/use-active-scope";
 import { ConfirmModal } from "#/components/confirm-modal";
 import { useHeaderActions } from "#/contexts/header-actions";
-import { Box, Button } from "@operonstudio/ui";
-import {
-  useMutation,
-  useQueryClient,
-  useQuery,
-} from "@tanstack/react-query";
-import { useState } from "react";
 import {
   createProjectOptions,
   deleteProjectOptions,
@@ -25,7 +23,16 @@ interface Project {
   description: string;
 }
 
+/** The cache key for the project list in the currently active scope. */
+const projectsKey = () => {
+  const { workspaceId, environmentId } = activeScope();
+  return queryKeys.projects(workspaceId, environmentId);
+};
+
 export const ProjectPage = () => {
+  // Subscribes to the active workspace and environment. The queries below
+  // are keyed by them, so this component has to re-render when they resolve.
+  useActiveScope();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [editingProject, setEditingProject] = useState<{
@@ -39,10 +46,8 @@ export const ProjectPage = () => {
   } | null>(null);
 
   const queryClient = useQueryClient();
-  const { data: projects = [] } = useQuery(getProjectsOptions);
-  const { data: pageData } = useQuery(
-    getPageContentOptions("projects"),
-  );
+  const { data: projects = [] } = useQuery(getProjectsOptions());
+  const { data: pageData } = useQuery(getPageContentOptions("projects"));
 
   const emptyState = pageData?.content?.emptyState;
   const modals = pageData?.modals;
@@ -50,21 +55,21 @@ export const ProjectPage = () => {
   const createProject = useMutation({
     ...createProjectOptions,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["projects"] });
+      queryClient.invalidateQueries({ queryKey: projectsKey() });
     },
   });
 
   const updateProject = useMutation({
     ...updateProjectOptions,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["projects"] });
+      queryClient.invalidateQueries({ queryKey: projectsKey() });
     },
   });
 
   const deleteProject = useMutation({
     ...deleteProjectOptions,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["projects"] });
+      queryClient.invalidateQueries({ queryKey: projectsKey() });
     },
   });
 
@@ -124,17 +129,22 @@ export const ProjectPage = () => {
 
   return (
     <>
-      <Box {...classes.projectGridStyle}>
+      <Box {...classes.projectListStyle}>
         {projects.length === 0 ? (
           <Box {...classes.emptyStateStyle}>
-            <Box {...classes.noProjectFoundStyle}>{emptyState?.title}</Box>
-            <Box>{emptyState?.description}</Box>
+            <Box {...classes.emptyStateTitleStyle}>
+              {emptyState?.title ?? "No projects yet"}
+            </Box>
+            <Box {...classes.emptyStateBodyStyle}>
+              {emptyState?.description ??
+                "A project groups the collections your frontend fetches, and owns the API key that serves them."}
+            </Box>
             <Button
               variant="outline"
               size="sm"
               onClick={() => setIsModalOpen(true)}
             >
-              {emptyState?.actionLabel}
+              {emptyState?.actionLabel ?? "Create project"}
             </Button>
           </Box>
         ) : (
@@ -144,8 +154,6 @@ export const ProjectPage = () => {
               id={project.id || ""}
               title={project.name}
               description={project.description}
-              apiCount={0}
-              environments={project.environments || []}
               onEdit={handleEditClick}
               onDelete={handleDeleteClick}
             />

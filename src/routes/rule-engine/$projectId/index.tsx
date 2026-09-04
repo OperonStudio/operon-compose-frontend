@@ -1,6 +1,6 @@
-import { RuleEngineCollectionPage } from "#/modules/rule-engine/collection";
 import { Box } from "@operonstudio/ui";
 import { createFileRoute } from "@tanstack/react-router";
+import { RuleEngineCollectionPage } from "#/modules/rule-engine/collection";
 
 export const Route = createFileRoute("/rule-engine/$projectId/")({
   component: RuleEngineProjectPage,

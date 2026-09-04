@@ -1,7 +1,27 @@
 import { ChevronDown, X } from "@operonstudio/icons";
-import { Box, Button, Dropdown, Input, Modal, Radio, toast } from "@operonstudio/ui";
-import { useEffect, useState } from "react";
-import type { Condition, Decision, OutcomeType } from "../types";
+import {
+  Box,
+  Button,
+  Dropdown,
+  Input,
+  Modal,
+  Radio,
+  toast,
+} from "@operonstudio/ui";
+import { Fragment, useEffect, useState } from "react";
+import { Field } from "#/components/field";
+import { DEFAULT_VARIANT } from "#/modules/project/projectId/content-api";
+import type { Condition, Decision, OperatorType, OutcomeType } from "../types";
+import * as classes from "./style";
+
+const STEPS = [
+  { number: 1, label: "Rule details" },
+  { number: 2, label: "Conditions" },
+  { number: 3, label: "Outcome" },
+] as const;
+
+let conditionKeySeq = 0;
+const newConditionKey = () => `condition-${++conditionKeySeq}`;
 
 interface DefineDecisionModalProps {
   isOpen: boolean;
@@ -9,6 +29,8 @@ interface DefineDecisionModalProps {
   decision?: Decision | null;
   onSave?: (decision: Partial<Decision>) => void;
   selectedAttributes?: { id: string; name: string; type: string }[];
+  /** Variant keys defined on the collection's current version. */
+  availableVariants?: string[];
 }
 
 export const DefineDecisionModal = ({
@@ -17,32 +39,43 @@ export const DefineDecisionModal = ({
   decision,
   onSave,
   selectedAttributes = [],
+  availableVariants = [DEFAULT_VARIANT],
 }: DefineDecisionModalProps) => {
+  const variantOptions = availableVariants.map((key) => ({
+    value: key,
+    label: key === DEFAULT_VARIANT ? `${key} (fallback)` : key,
+  }));
   const [activeStep, setActiveStep] = useState<number>(1);
   const [outcome, setOutcome] = useState<OutcomeType>(
-    decision?.outcome || "visible",
+    decision?.outcome === "hidden" ? "hidden" : "visible",
   );
+  const [variant, setVariant] = useState(decision?.variant || DEFAULT_VARIANT);
   const [label, setLabel] = useState(decision?.label || "");
   const [description, setDescription] = useState(decision?.description || "");
   const [priority, setPriority] = useState(decision?.priority || 1);
-  const [redirectUrl, setRedirectUrl] = useState(decision?.redirectUrl || "");
-  const [transformKey, setTransformKey] = useState(
-    decision?.transformKey || "",
-  );
   const [conditions, setConditions] = useState<Condition[]>(
     decision?.conditions || [],
+  );
+  // A condition has no id of its own, but the rows are editable, so React needs
+  // a key that survives editing and reordering. Indices would make a removal
+  // re-key every row below it and carry the wrong input state upward.
+  const [conditionKeys, setConditionKeys] = useState<string[]>(() =>
+    (decision?.conditions || []).map(() => newConditionKey()),
   );
 
   useEffect(() => {
     if (isOpen) {
       setActiveStep(1);
-      setOutcome(decision?.outcome || "visible");
+      // Coerce legacy outcomes (redirect/transform) that may still live in the
+      // database into a safe default so the modal can still edit them.
+      setOutcome(decision?.outcome === "hidden" ? "hidden" : "visible");
+      setVariant(decision?.variant || DEFAULT_VARIANT);
       setLabel(decision?.label || "");
       setDescription(decision?.description || "");
       setPriority(decision?.priority || 1);
-      setRedirectUrl(decision?.redirectUrl || "");
-      setTransformKey(decision?.transformKey || "");
-      setConditions(decision?.conditions || []);
+      const next = decision?.conditions || [];
+      setConditions(next);
+      setConditionKeys(next.map(() => newConditionKey()));
     }
   }, [decision, isOpen]);
 
@@ -50,18 +83,6 @@ export const DefineDecisionModal = ({
     if (!label.trim()) {
       setActiveStep(1);
       toast.error("Please enter a decision label.");
-      return;
-    }
-
-    if (outcome === "redirect" && !redirectUrl.trim()) {
-      setActiveStep(3);
-      toast.error("Please specify a target Redirect URL.");
-      return;
-    }
-
-    if (outcome === "transform" && !transformKey.trim()) {
-      setActiveStep(3);
-      toast.error("Please specify a Transform key.");
       return;
     }
 
@@ -73,8 +94,9 @@ export const DefineDecisionModal = ({
         priority: Number(priority),
         enabled: decision?.enabled ?? true,
         outcome,
-        redirectUrl: outcome === "redirect" ? redirectUrl.trim() : undefined,
-        transformKey: outcome === "transform" ? transformKey.trim() : undefined,
+        // A gate does not name a payload, so hidden rules clear it rather than
+        // carrying a stale key that would confuse the next reader.
+        variant: outcome === "visible" ? variant : "",
         conditions,
       });
     }
@@ -90,6 +112,7 @@ export const DefineDecisionModal = ({
         value: "",
       },
     ]);
+    setConditionKeys([...conditionKeys, newConditionKey()]);
   };
 
   const updateCondition = (index: number, patch: Partial<Condition>) => {
@@ -100,6 +123,7 @@ export const DefineDecisionModal = ({
 
   const removeCondition = (index: number) => {
     setConditions(conditions.filter((_, i) => i !== index));
+    setConditionKeys(conditionKeys.filter((_, i) => i !== index));
   };
 
   const OPERATORS = [
@@ -147,193 +171,75 @@ export const DefineDecisionModal = ({
           </Box>
 
           <Box display="flex" gap="12px">
-            <Button variant="outline" onClick={onClose} style={{ fontWeight: 600 }}>
+            <Button
+              variant="outline"
+              onClick={onClose}
+              style={{ fontWeight: 600 }}
+            >
               Cancel
             </Button>
-            <Button variant="primary" onClick={handleSave} style={{ fontWeight: 600 }}>
+            <Button
+              variant="primary"
+              onClick={handleSave}
+              style={{ fontWeight: 600 }}
+            >
               Save Decision
             </Button>
           </Box>
         </Box>
       }
     >
-      <Box
-        display="flex"
-        direction="column"
-        style={{
-          minHeight: "340px",
-          maxHeight: "calc(78vh - 120px)",
-          overflowY: "auto",
-        }}
-      >
-        {/* ── Timeline Progress Indicator ── */}
-        <Box
-          display="flex"
-          align="center"
-          justify="space-between"
-          style={{
-            padding: "4px 8px 20px",
-            borderBottom: "1px solid var(--operon-color-border)",
-            marginBottom: "20px",
-          }}
-        >
-          {/* Step 1: Rule Details */}
-          <Box
-            display="flex"
-            align="center"
-            gap="10px"
-            style={{ cursor: "pointer" }}
-            onClick={() => setActiveStep(1)}
-          >
-            <Box
-              style={{
-                width: "28px",
-                height: "28px",
-                borderRadius: "50%",
-                background:
-                  activeStep === 1
-                    ? "var(--operon-color-primary)"
-                    : activeStep > 1
-                    ? "var(--operon-color-primary)"
-                    : "var(--operon-color-surface-raised, #e2e8f0)",
-                color: activeStep >= 1 ? "#ffffff" : "var(--operon-color-text-muted)",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                fontSize: "12px",
-                fontWeight: 700,
-                transition: "all 0.2s ease",
-              }}
-            >
-              {activeStep > 1 ? "✓" : "1"}
-            </Box>
-            <Box
-              style={{
-                fontSize: "13px",
-                fontWeight: activeStep === 1 ? 700 : 500,
-                color:
-                  activeStep === 1
-                    ? "var(--operon-color-text)"
-                    : "var(--operon-color-text-muted)",
-              }}
-            >
-              Rule Details
-            </Box>
-          </Box>
-
-          {/* Timeline Line 1-2 */}
-          <Box
-            style={{
-              flex: 1,
-              height: "2px",
-              margin: "0 16px",
-              background:
-                activeStep > 1
-                  ? "var(--operon-color-primary)"
-                  : "var(--operon-color-border)",
-              transition: "background 0.2s ease",
-            }}
-          />
-
-          {/* Step 2: Conditions */}
-          <Box
-            display="flex"
-            align="center"
-            gap="10px"
-            style={{ cursor: "pointer" }}
-            onClick={() => setActiveStep(2)}
-          >
-            <Box
-              style={{
-                width: "28px",
-                height: "28px",
-                borderRadius: "50%",
-                background:
-                  activeStep === 2
-                    ? "var(--operon-color-primary)"
-                    : activeStep > 2
-                    ? "var(--operon-color-primary)"
-                    : "var(--operon-color-surface-raised, #e2e8f0)",
-                color: activeStep >= 2 ? "#ffffff" : "var(--operon-color-text-muted)",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                fontSize: "12px",
-                fontWeight: 700,
-                transition: "all 0.2s ease",
-              }}
-            >
-              {activeStep > 2 ? "✓" : "2"}
-            </Box>
-            <Box
-              style={{
-                fontSize: "13px",
-                fontWeight: activeStep === 2 ? 700 : 500,
-                color:
-                  activeStep === 2
-                    ? "var(--operon-color-text)"
-                    : "var(--operon-color-text-muted)",
-              }}
-            >
-              Conditions ({conditions.length})
-            </Box>
-          </Box>
-
-          {/* Timeline Line 2-3 */}
-          <Box
-            style={{
-              flex: 1,
-              height: "2px",
-              margin: "0 16px",
-              background:
-                activeStep > 2
-                  ? "var(--operon-color-primary)"
-                  : "var(--operon-color-border)",
-              transition: "background 0.2s ease",
-            }}
-          />
-
-          {/* Step 3: Outcome Strategy */}
-          <Box
-            display="flex"
-            align="center"
-            gap="10px"
-            style={{ cursor: "pointer" }}
-            onClick={() => setActiveStep(3)}
-          >
-            <Box
-              style={{
-                width: "28px",
-                height: "28px",
-                borderRadius: "50%",
-                background:
-                  activeStep === 3
-                    ? "var(--operon-color-primary)"
-                    : "var(--operon-color-surface-raised, #e2e8f0)",
-                color: activeStep === 3 ? "#ffffff" : "var(--operon-color-text-muted)",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                fontSize: "12px",
-                fontWeight: 700,
-                transition: "all 0.2s ease",
-              }}
-            >
-              3
-            </Box>
-            <Box
-              style={{
-                fontSize: "13px",
-                fontWeight: activeStep === 3 ? 700 : 500,
-                color:
-                  activeStep === 3
-                    ? "var(--operon-color-text)"
-                    : "var(--operon-color-text-muted)",
-              }}
-            >
-              Outcome Strategy
-            </Box>
-          </Box>
+      <Box {...classes.modalBodyStyle}>
+        <Box {...classes.stepperStyle}>
+          {STEPS.map((step, index) => (
+            <Fragment key={step.number}>
+              {index > 0 && (
+                <Box
+                  {...classes.stepConnectorStyle}
+                  style={{
+                    backgroundColor:
+                      activeStep > index
+                        ? "var(--operon-color-primary)"
+                        : "var(--operon-color-border)",
+                  }}
+                />
+              )}
+              <button
+                type="button"
+                {...classes.stepStyle}
+                onClick={() => setActiveStep(step.number)}
+                aria-current={activeStep === step.number ? "step" : undefined}
+              >
+                <Box
+                  {...classes.stepMarkerStyle}
+                  style={{
+                    backgroundColor:
+                      activeStep === step.number
+                        ? "var(--operon-color-primary)"
+                        : "var(--operon-color-surface-sunken)",
+                    color:
+                      activeStep === step.number
+                        ? "var(--operon-color-text-inverse)"
+                        : "var(--operon-color-text-muted)",
+                  }}
+                >
+                  {activeStep > step.number ? "\u2713" : step.number}
+                </Box>
+                <Box
+                  {...classes.stepLabelStyle}
+                  style={{
+                    fontWeight: activeStep === step.number ? 600 : 500,
+                    color:
+                      activeStep === step.number
+                        ? "var(--operon-color-text-strong)"
+                        : "var(--operon-color-text-muted)",
+                  }}
+                >
+                  {step.label}
+                </Box>
+              </button>
+            </Fragment>
+          ))}
         </Box>
 
         {/* ── STEP 1: Rule Details ── */}
@@ -361,61 +267,39 @@ export const DefineDecisionModal = ({
             <Box display="flex" direction="column" gap="16px">
               <Box display="flex" gap="16px">
                 <Box style={{ flex: 1 }}>
-                  <label
-                    style={{
-                      display: "block",
-                      fontSize: "13px",
-                      fontWeight: 600,
-                      color: "var(--operon-color-text)",
-                      marginBottom: "6px",
-                    }}
+                  <Field
+                    label="Decision label"
+                    htmlFor="decision-label"
+                    required
                   >
-                    Decision Label *
-                  </label>
-                  <Input
-                    value={label}
-                    onChange={(e) => setLabel(e.target.value)}
-                    placeholder="e.g. Redirect EU users or Hide pricing for guests"
-                  />
+                    <Input
+                      id="decision-label"
+                      value={label}
+                      onChange={(e) => setLabel(e.target.value)}
+                      placeholder="e.g. Hide pricing for guests"
+                    />
+                  </Field>
                 </Box>
                 <Box style={{ width: "130px" }}>
-                  <label
-                    style={{
-                      display: "block",
-                      fontSize: "13px",
-                      fontWeight: 600,
-                      color: "var(--operon-color-text)",
-                      marginBottom: "6px",
-                    }}
-                  >
-                    Priority Order
-                  </label>
-                  <Input
-                    type="number"
-                    value={priority}
-                    onChange={(e) => setPriority(Number(e.target.value))}
-                    min={1}
-                  />
+                  <Field label="Priority" htmlFor="decision-priority">
+                    <Input
+                      id="decision-priority"
+                      type="number"
+                      value={priority}
+                      onChange={(e) => setPriority(Number(e.target.value))}
+                      min={1}
+                    />
+                  </Field>
                 </Box>
               </Box>
-              <Box>
-                <label
-                  style={{
-                    display: "block",
-                    fontSize: "13px",
-                    fontWeight: 600,
-                    color: "var(--operon-color-text)",
-                    marginBottom: "6px",
-                  }}
-                >
-                  Description (Optional)
-                </label>
+              <Field label="Description" htmlFor="decision-description">
                 <Input
+                  id="decision-description"
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
-                  placeholder="Explain when and why this rule should execute..."
+                  placeholder="When and why this rule should fire"
                 />
-              </Box>
+              </Field>
             </Box>
           </Box>
         )}
@@ -466,152 +350,123 @@ export const DefineDecisionModal = ({
                   fontSize: "13px",
                 }}
               >
-                No conditions set yet. Click "+ Add Condition" to define context rules.
+                No conditions set yet. Click "+ Add Condition" to define context
+                rules.
               </Box>
             ) : (
-              <Box
-                display="flex"
-                direction="column"
-                gap="12px"
-                style={{
-                  maxHeight: "320px",
-                  overflowY: "auto",
-                  paddingRight: "6px",
-                }}
-              >
+              <Box {...classes.conditionListStyle}>
                 {conditions.map((cond, index) => (
                   <Box
-                    key={index}
-                    style={{
-                      display: "grid",
-                      gridTemplateColumns: "1.2fr 1.2fr 1.5fr auto",
-                      gap: "12px",
-                      alignItems: "center",
-                      border: "1px solid var(--operon-color-border)",
-                      borderRadius: "6px",
-                      padding: "12px 14px",
-                      background: "var(--operon-color-surface-sunken)",
-                    }}
+                    key={conditionKeys[index]}
+                    {...classes.conditionRowStyle}
                   >
                     {/* Attribute */}
-                    <Box>
-                      <label
-                        style={{
-                          display: "block",
-                          fontSize: "10px",
-                          fontWeight: 700,
-                          marginBottom: "4px",
-                          color: "var(--operon-color-text-muted)",
-                        }}
+                    <Box {...classes.conditionFieldStyle}>
+                      <Field
+                        label="Context variable"
+                        id={`condition-${index}-attribute-label`}
                       >
-                        CONTEXT VARIABLE
-                      </label>
-                      <Dropdown
-                        onSelect={(val) =>
-                          updateCondition(index, { attribute: val })
-                        }
-                        trigger={
-                          <Button
-                            variant="outline"
-                            style={{
-                              width: "100%",
-                              justifyContent: "space-between",
-                              fontWeight: 500,
-                              fontSize: "13px",
-                            }}
-                          >
-                            {cond.attribute || "Select…"}
-                            <ChevronDown size={12} />
-                          </Button>
-                        }
-                        items={
-                          selectedAttributes.length > 0
-                            ? selectedAttributes.map((a) => ({
-                                value: a.name,
-                                label: a.name,
-                              }))
-                            : [
-                                {
-                                  value: cond.attribute,
-                                  label: cond.attribute || "—",
-                                },
-                              ]
-                        }
-                      />
+                        <Dropdown
+                          onSelect={(val) =>
+                            updateCondition(index, { attribute: val })
+                          }
+                          trigger={
+                            <Button
+                              variant="outline"
+                              style={{
+                                width: "100%",
+                                justifyContent: "space-between",
+                                fontWeight: 500,
+                                fontSize: "13px",
+                              }}
+                            >
+                              {cond.attribute || "Select…"}
+                              <ChevronDown size={12} />
+                            </Button>
+                          }
+                          items={
+                            selectedAttributes.length > 0
+                              ? selectedAttributes.map((a) => ({
+                                  value: a.name,
+                                  label: a.name,
+                                }))
+                              : [
+                                  {
+                                    value: cond.attribute,
+                                    label: cond.attribute || "—",
+                                  },
+                                ]
+                          }
+                        />
+                      </Field>
                     </Box>
 
                     {/* Operator */}
-                    <Box>
-                      <label
-                        style={{
-                          display: "block",
-                          fontSize: "10px",
-                          fontWeight: 700,
-                          marginBottom: "4px",
-                          color: "var(--operon-color-text-muted)",
-                        }}
+                    <Box {...classes.conditionFieldStyle}>
+                      <Field
+                        label="Operator"
+                        id={`condition-${index}-operator-label`}
                       >
-                        OPERATOR
-                      </label>
-                      <Dropdown
-                        onSelect={(val) =>
-                          updateCondition(index, { operator: val as any })
-                        }
-                        trigger={
-                          <Button
-                            variant="outline"
-                            style={{
-                              width: "100%",
-                              justifyContent: "space-between",
-                              fontWeight: 500,
-                              fontSize: "13px",
-                            }}
-                          >
-                            {OPERATORS.find((o) => o.value === cond.operator)
-                              ?.label ?? cond.operator}
-                            <ChevronDown size={12} />
-                          </Button>
-                        }
-                        items={OPERATORS}
-                      />
+                        <Dropdown
+                          onSelect={(val) =>
+                            updateCondition(index, {
+                              operator: val as OperatorType,
+                            })
+                          }
+                          trigger={
+                            <Button
+                              variant="outline"
+                              style={{
+                                width: "100%",
+                                justifyContent: "space-between",
+                                fontWeight: 500,
+                                fontSize: "13px",
+                              }}
+                            >
+                              {OPERATORS.find((o) => o.value === cond.operator)
+                                ?.label ?? cond.operator}
+                              <ChevronDown size={12} />
+                            </Button>
+                          }
+                          items={OPERATORS}
+                        />
+                      </Field>
                     </Box>
 
                     {/* Value */}
-                    <Box>
-                      <label
-                        style={{
-                          display: "block",
-                          fontSize: "10px",
-                          fontWeight: 700,
-                          marginBottom: "4px",
-                          color: "var(--operon-color-text-muted)",
-                        }}
+                    <Box {...classes.conditionFieldStyle}>
+                      <Field
+                        label="Expected value"
+                        htmlFor={`condition-${index}-value`}
                       >
-                        EXPECTED VALUE
-                      </label>
-                      <Input
-                        value={cond.value ?? ""}
-                        onChange={(e) =>
-                          updateCondition(index, { value: e.target.value })
-                        }
-                        placeholder="e.g. US or true or 10"
-                        style={{ fontSize: "13px" }}
-                      />
+                        <Input
+                          id={`condition-${index}-value`}
+                          value={String(cond.value ?? "")}
+                          onChange={(e) =>
+                            updateCondition(index, { value: e.target.value })
+                          }
+                          placeholder="e.g. US, true, 10"
+                          style={{ fontSize: "13px" }}
+                        />
+                      </Field>
                     </Box>
 
                     {/* Remove */}
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => removeCondition(index)}
-                      style={{
-                        padding: "6px",
-                        minWidth: 0,
-                        color: "var(--operon-color-text-muted)",
-                      }}
-                    >
-                      <X size={16} />
-                    </Button>
+                    <Box {...classes.conditionRemoveStyle}>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => removeCondition(index)}
+                        aria-label={`Remove condition ${index + 1}`}
+                        style={{
+                          padding: "6px",
+                          minWidth: 0,
+                          color: "var(--operon-color-text-muted)",
+                        }}
+                      >
+                        <X size={16} />
+                      </Button>
+                    </Box>
                   </Box>
                 ))}
               </Box>
@@ -656,66 +511,51 @@ export const DefineDecisionModal = ({
               <Radio
                 name="outcome"
                 value="hidden"
-                label="Hidden — Suppress content response"
+                label="Hidden — return an empty response"
                 checked={outcome === "hidden"}
                 onChange={() => setOutcome("hidden")}
               />
-              <Radio
-                name="outcome"
-                value="redirect"
-                label="Redirect — Forward request to URL"
-                checked={outcome === "redirect"}
-                onChange={() => setOutcome("redirect")}
-              />
-              <Radio
-                name="outcome"
-                value="transform"
-                label="Transform — Pluck specific key"
-                checked={outcome === "transform"}
-                onChange={() => setOutcome("transform")}
-              />
             </Box>
 
-            {/* Conditional Outcome Inputs */}
-            {outcome === "redirect" && (
-              <Box style={{ marginTop: "16px" }}>
-                <label
+            {/* Which payload to serve. This is what makes a rule a choice
+                rather than a switch: without it, serving Spanish copy meant a
+                second collection at a second URL that the client had to pick
+                between itself. */}
+            {outcome === "visible" && (
+              <Box style={{ marginTop: "20px" }}>
+                <Field label="Serve this variant" id="decision-variant-label">
+                  <Dropdown
+                    onSelect={setVariant}
+                    containerStyle={{ width: "100%" }}
+                    items={variantOptions}
+                    trigger={
+                      <Button
+                        variant="outline"
+                        aria-labelledby="decision-variant-label"
+                        style={{
+                          width: "100%",
+                          justifyContent: "space-between",
+                        }}
+                      >
+                        {variantOptions.find((o) => o.value === variant)
+                          ?.label ?? "default"}
+                        <ChevronDown size={16} />
+                      </Button>
+                    }
+                  />
+                </Field>
+                <Box
                   style={{
-                    display: "block",
+                    marginTop: "6px",
                     fontSize: "12px",
-                    fontWeight: 600,
-                    color: "var(--operon-color-text)",
-                    marginBottom: "6px",
+                    color: "var(--operon-color-text-muted)",
+                    lineHeight: 1.5,
                   }}
                 >
-                  Target Redirect URL *
-                </label>
-                <Input
-                  value={redirectUrl}
-                  onChange={(e) => setRedirectUrl(e.target.value)}
-                  placeholder="https://cdn.operon.io/v2/fallback-content"
-                />
-              </Box>
-            )}
-
-            {outcome === "transform" && (
-              <Box style={{ marginTop: "16px" }}>
-                <label
-                  style={{
-                    display: "block",
-                    fontSize: "12px",
-                    fontWeight: 600,
-                    color: "var(--operon-color-text)",
-                    marginBottom: "6px",
-                  }}
-                >
-                  JSON Transform Property Key *
-                </label>
-                <Input
-                  value={transformKey}
-                  onChange={(e) => setTransformKey(e.target.value)}
-                  placeholder="e.g. features or userPayload"
-                />
+                  {availableVariants.length > 1
+                    ? "The default is served when no rule matches."
+                    : "This collection has only a default payload. Add a variant on the Content tab to give this rule something else to serve."}
+                </Box>
               </Box>
             )}
           </Box>

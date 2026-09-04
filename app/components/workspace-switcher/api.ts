@@ -1,6 +1,7 @@
-import { Endpoints } from "#/common/api/endpoints";
-import { operonApiClient } from "#/libs/apiClient";
 import { mutationOptions, queryOptions } from "@tanstack/react-query";
+import { Endpoints } from "#/common/api/endpoints";
+import { queryKeys } from "#/common/api/query-keys";
+import { operonApiClient } from "#/libs/apiClient";
 
 export interface Workspace {
   id: string;
@@ -18,7 +19,7 @@ export interface UpdateWorkspaceReq {
 }
 
 export const getWorkspacesOptions = queryOptions({
-  queryKey: ["workspaces"],
+  queryKey: queryKeys.workspaces(),
   queryFn: async () =>
     await operonApiClient.get<Workspace[]>(
       Endpoints.composeEndpoints.WORKSPACES(),

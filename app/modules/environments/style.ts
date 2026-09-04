@@ -1,13 +1,24 @@
 import { css } from "@morph-css/kit";
+import {
+  DESKTOP_QUERY,
+  PAGE_PADDING,
+  PAGE_PADDING_MOBILE,
+} from "#/common/layout";
 
 export const pageContainerStyle = css({
-  padding: "40px",
+  padding: PAGE_PADDING_MOBILE,
+  boxSizing: "border-box",
+  [DESKTOP_QUERY]: { padding: PAGE_PADDING },
   maxWidth: "1280px",
   margin: "0 auto",
   width: "100%",
   display: "flex",
   flexDirection: "column",
   gap: "32px",
+  "@media (max-width: 768px)": {
+    padding: "20px 16px 40px",
+    gap: "20px",
+  },
 });
 
 export const environmentCardStyle = css({
@@ -20,6 +31,9 @@ export const environmentCardStyle = css({
   gap: "12px",
   boxShadow: "2px 2px 0px rgba(0,0,0,0.05)",
   transition: "transform 0.2s, box-shadow 0.2s",
+  "@media (max-width: 640px)": {
+    padding: "16px",
+  },
 });
 
 export const environmentNameStyle = css({

@@ -1,13 +1,3 @@
-import {
-  appConfigContentOptions,
-  sidebarContentOptions,
-} from "#/common/api/content-api";
-import { resolveIcon } from "#/common/icon-map";
-import {
-  Header,
-  SubHeaderBreadcrumbs,
-} from "#/components/header";
-import { SidebarHeaderControl } from "#/components/sidebar-header-control";
 import { cx } from "@morph-css/kit";
 import { useAuth } from "@operonstudio/auth";
 import { BarChart3, Code, Database, Moon, Sun } from "@operonstudio/icons";
@@ -20,6 +10,17 @@ import {
 } from "@operonstudio/ui";
 import { useQuery } from "@tanstack/react-query";
 import { Link, useLocation } from "@tanstack/react-router";
+import {
+  appConfigContentOptions,
+  sidebarContentOptions,
+} from "#/common/api/content-api";
+import type {
+  SidebarGroupData,
+  SidebarItemData,
+} from "#/common/api/interfaces";
+import { resolveIcon } from "#/common/icon-map";
+import { Header, SubHeaderBreadcrumbs } from "#/components/header";
+import { SidebarHeaderControl } from "#/components/sidebar-header-control";
 import * as classes from "./style";
 
 const isProdDomain =
@@ -67,8 +68,6 @@ const PRODUCTS: AppShellProduct[] = [
   },
 ];
 
-
-
 export const DashboardLayout = ({
   children,
 }: {
@@ -86,10 +85,10 @@ export const DashboardLayout = ({
   const appName = appConfig?.appName ?? "Compose";
 
   const navGroups: AppShellNavGroup[] = sidebarGroups.map(
-    (group: any, i: number) => ({
+    (group: SidebarGroupData, i: number) => ({
       key: `${group.title ?? "group"}-${i}`,
       title: group.title,
-      items: group.items.map((item: any, j: number) => {
+      items: group.items.map((item: SidebarItemData, j: number) => {
         const Icon = resolveIcon(item.icon);
         const isActive =
           item.href === "/"
@@ -111,7 +110,7 @@ export const DashboardLayout = ({
             href?: string;
             className?: string;
             children?: React.ReactNode;
-            "aria-current"?: any;
+            "aria-current"?: React.AriaAttributes["aria-current"];
           }) =>
             isExternal ? (
               <a

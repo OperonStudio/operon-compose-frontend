@@ -1,27 +1,61 @@
-import { Endpoints } from "#/common/api/endpoints";
-import { operonApiClient } from "#/libs/apiClient";
-import { getActiveIds } from "#/libs/utils";
 import { mutationOptions, queryOptions } from "@tanstack/react-query";
+import { getActiveScope } from "#/common/active-scope";
+import { Endpoints } from "#/common/api/endpoints";
+import { queryKeys } from "#/common/api/query-keys";
+import { operonApiClient } from "#/libs/apiClient";
 import type { Decision } from "./types";
 
-export const getRulesOptions = (projectId: string, collectionId: string) =>
-  queryOptions({
-    queryKey: ["rules", projectId, collectionId],
-    queryFn: async () => {
-      const { workspaceId, environmentId } = getActiveIds();
-      if (!workspaceId || !environmentId) return [];
-      return await operonApiClient.get<Decision[]>(
-        Endpoints.composeEndpoints.COLLECTION_RULES(
-          workspaceId,
-          environmentId,
-          projectId,
-          collectionId,
-        ),
-      );
-    },
-    staleTime: 0,
-    refetchOnMount: "always",
+/** Cache key for a project's decisions, or a collection's when one is given. */
+export const decisionsKey = (
+  projectId: string,
+  collectionId: string | null,
+) => {
+  const { workspaceId, environmentId } = getActiveScope();
+  return collectionId
+    ? queryKeys.collectionRules(
+        workspaceId,
+        environmentId,
+        projectId,
+        collectionId,
+      )
+    : queryKeys.projectRules(workspaceId, environmentId, projectId);
+};
+
+/**
+ * Decisions for one project, or for one collection inside it.
+ *
+ * Both levels share a shape and a screen, so they share one options builder —
+ * branching between two differently-keyed `queryOptions` at the call site
+ * produced a union React Query cannot resolve.
+ *
+ * Pass `collectionId: null` for the project level.
+ */
+export const getDecisionsOptions = (
+  projectId: string,
+  collectionId: string | null,
+) => {
+  const { workspaceId, environmentId, hasEnvironment } = getActiveScope();
+  return queryOptions({
+    queryKey: decisionsKey(projectId, collectionId),
+    queryFn: async () =>
+      await operonApiClient.get<Decision[]>(
+        collectionId
+          ? Endpoints.composeEndpoints.COLLECTION_RULES(
+              workspaceId,
+              environmentId,
+              projectId,
+              collectionId,
+            )
+          : Endpoints.composeEndpoints.PROJECT_RULES(
+              workspaceId,
+              environmentId,
+              projectId,
+            ),
+      ),
+    enabled: hasEnvironment && Boolean(projectId),
+    staleTime: 15_000,
   });
+};
 
 export const createRuleOptions = mutationOptions({
   mutationFn: async ({
@@ -33,7 +67,7 @@ export const createRuleOptions = mutationOptions({
     collectionId: string;
     rule: Partial<Decision>;
   }) => {
-    const { workspaceId, environmentId } = getActiveIds();
+    const { workspaceId, environmentId } = getActiveScope();
     if (!workspaceId || !environmentId)
       throw new Error("No active workspace or environment");
     return await operonApiClient.post<Decision>(
@@ -60,7 +94,7 @@ export const updateRuleOptions = mutationOptions({
     ruleId: string;
     rule: Partial<Decision>;
   }) => {
-    const { workspaceId, environmentId } = getActiveIds();
+    const { workspaceId, environmentId } = getActiveScope();
     if (!workspaceId || !environmentId)
       throw new Error("No active workspace or environment");
     return await operonApiClient.patch<Decision>(
@@ -86,7 +120,7 @@ export const deleteRuleOptions = mutationOptions({
     collectionId: string;
     ruleId: string;
   }) => {
-    const { workspaceId, environmentId } = getActiveIds();
+    const { workspaceId, environmentId } = getActiveScope();
     if (!workspaceId || !environmentId)
       throw new Error("No active workspace or environment");
     return await operonApiClient.delete(
@@ -103,20 +137,6 @@ export const deleteRuleOptions = mutationOptions({
 
 // ---- Project-level rules (stored on the project model) ----
 
-export const getProjectRulesOptions = (projectId: string) =>
-  queryOptions({
-    queryKey: ["rules", projectId, "__project__"],
-    queryFn: async () => {
-      const { workspaceId, environmentId } = getActiveIds();
-      if (!workspaceId || !environmentId) return [];
-      return await operonApiClient.get<Decision[]>(
-        Endpoints.composeEndpoints.PROJECT_RULES(workspaceId, environmentId, projectId),
-      );
-    },
-    staleTime: 0,
-    refetchOnMount: "always",
-  });
-
 export const createProjectRuleOptions = mutationOptions({
   mutationFn: async ({
     projectId,
@@ -126,11 +146,15 @@ export const createProjectRuleOptions = mutationOptions({
     collectionId: string;
     rule: Partial<Decision>;
   }) => {
-    const { workspaceId, environmentId } = getActiveIds();
+    const { workspaceId, environmentId } = getActiveScope();
     if (!workspaceId || !environmentId)
       throw new Error("No active workspace or environment");
     return await operonApiClient.post<Decision>(
-      Endpoints.composeEndpoints.PROJECT_RULES(workspaceId, environmentId, projectId),
+      Endpoints.composeEndpoints.PROJECT_RULES(
+        workspaceId,
+        environmentId,
+        projectId,
+      ),
       rule,
     );
   },
@@ -147,11 +171,16 @@ export const updateProjectRuleOptions = mutationOptions({
     ruleId: string;
     rule: Partial<Decision>;
   }) => {
-    const { workspaceId, environmentId } = getActiveIds();
+    const { workspaceId, environmentId } = getActiveScope();
     if (!workspaceId || !environmentId)
       throw new Error("No active workspace or environment");
     return await operonApiClient.patch<Decision>(
-      Endpoints.composeEndpoints.PROJECT_RULE(workspaceId, environmentId, projectId, ruleId),
+      Endpoints.composeEndpoints.PROJECT_RULE(
+        workspaceId,
+        environmentId,
+        projectId,
+        ruleId,
+      ),
       rule,
     );
   },
@@ -166,11 +195,16 @@ export const deleteProjectRuleOptions = mutationOptions({
     collectionId: string;
     ruleId: string;
   }) => {
-    const { workspaceId, environmentId } = getActiveIds();
+    const { workspaceId, environmentId } = getActiveScope();
     if (!workspaceId || !environmentId)
       throw new Error("No active workspace or environment");
     return await operonApiClient.delete(
-      Endpoints.composeEndpoints.PROJECT_RULE(workspaceId, environmentId, projectId, ruleId),
+      Endpoints.composeEndpoints.PROJECT_RULE(
+        workspaceId,
+        environmentId,
+        projectId,
+        ruleId,
+      ),
     );
   },
 });

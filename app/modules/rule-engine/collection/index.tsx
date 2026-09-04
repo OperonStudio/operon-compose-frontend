@@ -1,17 +1,18 @@
 import { Box, Button, Tabs, toast } from "@operonstudio/ui";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
+import { useActiveScope } from "#/common/use-active-scope";
 import { getContextsOptions } from "../../context-module/api";
 
 import {
-  createRuleOptions,
   createProjectRuleOptions,
-  deleteRuleOptions,
+  createRuleOptions,
+  decisionsKey,
   deleteProjectRuleOptions,
-  getRulesOptions,
-  getProjectRulesOptions,
-  updateRuleOptions,
+  deleteRuleOptions,
+  getDecisionsOptions,
   updateProjectRuleOptions,
+  updateRuleOptions,
 } from "./api";
 import { AttributesModal } from "./components/AttributesModal";
 import { AttributesSection } from "./components/AttributesSection";
@@ -29,16 +30,21 @@ export const RuleEngineCollectionPage = ({
   isProjectLevel?: boolean;
 }) => {
   const queryClient = useQueryClient();
-  const rulesQueryKey = isProjectLevel
-    ? ["rules", _projectId, "__project__"]
-    : ["rules", _projectId, _collectionId];
 
-  const { data: allContextVariables = [] } = useQuery(getContextsOptions);
+  // Subscribes to the active workspace and environment. Every query below is
+  // keyed by them, so this screen has to re-render once they resolve.
+  useActiveScope();
+
+  // The project level is the collection level with no collection, so both share
+  // one key builder and one options builder rather than a parallel pair that
+  // could drift apart.
+  const collectionId = isProjectLevel ? null : _collectionId;
+  const rulesQueryKey = decisionsKey(_projectId, collectionId);
+
+  const { data: allContextVariables = [] } = useQuery(getContextsOptions());
 
   const { data: decisions = [], isLoading } = useQuery(
-    isProjectLevel
-      ? getProjectRulesOptions(_projectId)
-      : getRulesOptions(_projectId, _collectionId),
+    getDecisionsOptions(_projectId, collectionId),
   );
 
   const { mutate: createDecision } = useMutation({
@@ -72,8 +78,8 @@ export const RuleEngineCollectionPage = ({
       );
       return { previous };
     },
-    onError: (_err, _vars, context: any) => {
-      // Rollback on error
+    onError: (_err, _vars, context) => {
+      // Put back what the optimistic update removed.
       if (context?.previous) {
         queryClient.setQueryData(rulesQueryKey, context.previous);
       }

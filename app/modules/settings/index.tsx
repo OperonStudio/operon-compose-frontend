@@ -1,81 +1,95 @@
-import { getActiveIds } from "#/libs/utils";
 import { useAuth } from "@operonstudio/auth";
 import { Check, Copy, Mail, Plus, Trash2 } from "@operonstudio/icons";
-import { Box, Button, Chip, Dropdown, Input, Modal, Tabs, toast } from "@operonstudio/ui";
+import {
+  Box,
+  Button,
+  Chip,
+  Dropdown,
+  Input,
+  Modal,
+  Tabs,
+  toast,
+} from "@operonstudio/ui";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useEffect, useState } from "react";
+import { useState } from "react";
+import { getActiveScope } from "#/common/active-scope";
+import { queryKeys } from "#/common/api/query-keys";
+import { useActiveScope } from "#/common/use-active-scope";
+import { Field } from "#/components/field";
+import {
+  InvitationConfirmModal,
+  useInvitationToken,
+} from "./InvitationConfirmModal";
 import * as classes from "./style";
 import {
-  acceptInvitationOptions,
   createInvitationOptions,
   getInvitationsOptions,
+  getWorkspaceMembersOptions,
   getWorkspaceOptions,
   revokeInvitationOptions,
 } from "./team/api";
 
 export const SettingsPage = () => {
+  // Subscribes to the active workspace and environment. The queries below
+  // are keyed by them, so this component has to re-render when they resolve.
+  useActiveScope();
   const { user } = useAuth();
-  const { workspaceId } = getActiveIds();
+  const { workspaceId } = getActiveScope();
   const queryClient = useQueryClient();
 
   const [isInviteModalOpen, setIsInviteModalOpen] = useState(false);
   const [inviteEmail, setInviteEmail] = useState("");
   const [inviteRole, setInviteRole] = useState("editor");
   const [copiedId, setCopiedId] = useState(false);
+  const [pendingToken, clearPendingToken] = useInvitationToken();
 
   const { data: workspace } = useQuery(getWorkspaceOptions(workspaceId));
   const { data: invitations = [] } = useQuery(getInvitationsOptions());
-
-  const acceptInviteMutation = useMutation({
-    ...acceptInvitationOptions,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["invitations"] });
-      queryClient.invalidateQueries({ queryKey: ["workspace"] });
-      toast.success("Successfully joined workspace!");
-      window.history.replaceState({}, document.title, window.location.pathname);
-    },
-    onError: (err: any) => {
-      toast.error(err.message || "Failed to accept invitation.");
-    },
-  });
-
-  useEffect(() => {
-    const urlParams = new URLSearchParams(window.location.search);
-    const token = urlParams.get("token");
-    if (token) {
-      acceptInviteMutation.mutate(token);
-    }
-  }, []);
+  const { data: members = [] } = useQuery(getWorkspaceMembersOptions());
 
   const createInviteMutation = useMutation({
     ...createInvitationOptions,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["invitations"] });
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.invitations(workspaceId),
+      });
       toast.success("Invitation sent successfully!");
       setIsInviteModalOpen(false);
       setInviteEmail("");
     },
-    onError: (err: any) => {
+    onError: (err: Error) => {
       toast.error(err.message || "Failed to send invitation.");
     },
   });
 
-
   const revokeInviteMutation = useMutation({
     ...revokeInvitationOptions,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["invitations"] });
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.invitations(workspaceId),
+      });
       toast.success("Invitation revoked.");
     },
   });
 
   const handleSendInvite = () => {
-    if (!inviteEmail.trim()) {
+    const email = inviteEmail.trim();
+    if (!email) {
       toast.error("Please enter an email address.");
       return;
     }
+    // Minimal boundary validation — the backend still performs the
+    // authoritative check.
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      toast.error("Please enter a valid email address.");
+      return;
+    }
+    if (user?.email && email.toLowerCase() === user.email.toLowerCase()) {
+      toast.error("You cannot invite yourself.");
+      return;
+    }
     createInviteMutation.mutate({
-      email: inviteEmail.trim(),
+      email,
       role: inviteRole,
     });
   };
@@ -89,22 +103,43 @@ export const SettingsPage = () => {
     }
   };
 
-  // Dynamically compute active workspace member list from authenticated user
-  const teamMembers = user
-    ? [
-        {
-          id: user.id || "current-user",
-          name: user.name || (user.email ? user.email.split("@")[0] : "Workspace Owner"),
-          email: user.email || "owner@operon.io",
-          role: "Owner",
+  // Prefer the real membership roster from the backend. Fall back to a
+  // single-row list for the signed-in user so first-load (before the members
+  // query resolves) still renders something meaningful.
+  const teamMembers =
+    members.length > 0
+      ? members.map((m) => ({
+          id: m.id || m.userId,
+          name: m.name || (m.email ? m.email.split("@")[0] : "Member"),
+          email: m.email,
+          role: (m.role || "editor").replace(/^\w/, (c) => c.toUpperCase()),
           status: "Active",
-          isCurrentUser: true,
-        },
-      ]
-    : [];
+          isCurrentUser: user?.id === m.userId,
+        }))
+      : user
+        ? [
+            {
+              id: user.id || "current-user",
+              name:
+                user.name ||
+                (user.email ? user.email.split("@")[0] : "Workspace Owner"),
+              email: user.email || "owner@operon.io",
+              role: "Owner",
+              status: "Active",
+              isCurrentUser: true,
+            },
+          ]
+        : [];
 
   return (
     <Box {...classes.containerStyle}>
+      {/* Invitation acceptance modal — driven by ?token= in the URL. Renders
+          nothing when no token is present. */}
+      <InvitationConfirmModal
+        token={pendingToken}
+        onClose={clearPendingToken}
+      />
+
       {/* ── Header ── */}
       <Box {...classes.headerStyle}>
         <Box {...classes.headerTextStyle}>
@@ -129,7 +164,12 @@ export const SettingsPage = () => {
           {
             label: "Team & Access",
             content: (
-              <Box style={{ paddingTop: "20px" }} display="flex" direction="column" gap="24px">
+              <Box
+                style={{ paddingTop: "20px" }}
+                display="flex"
+                direction="column"
+                gap="24px"
+              >
                 {/* Members Table */}
                 <Box {...classes.cardStyle}>
                   <Box {...classes.cardHeaderStyle}>
@@ -204,9 +244,23 @@ export const SettingsPage = () => {
                     <Box display="flex" direction="column">
                       {invitations.map((inv) => (
                         <Box key={inv.id} {...classes.invitationItemStyle}>
-                          <Box display="flex" align="center" gap="12px" style={{ minWidth: 0 }}>
-                            <Mail size={18} color="var(--operon-color-text-muted)" style={{ flexShrink: 0 }} />
-                            <Box display="flex" direction="column" gap="2px" style={{ minWidth: 0 }}>
+                          <Box
+                            display="flex"
+                            align="center"
+                            gap="12px"
+                            style={{ minWidth: 0 }}
+                          >
+                            <Mail
+                              size={18}
+                              color="var(--operon-color-text-muted)"
+                              style={{ flexShrink: 0 }}
+                            />
+                            <Box
+                              display="flex"
+                              direction="column"
+                              gap="2px"
+                              style={{ minWidth: 0 }}
+                            >
                               <Box
                                 style={{
                                   fontWeight: 600,
@@ -248,7 +302,12 @@ export const SettingsPage = () => {
           {
             label: "General Settings",
             content: (
-              <Box style={{ paddingTop: "20px" }} display="flex" direction="column" gap="24px">
+              <Box
+                style={{ paddingTop: "20px" }}
+                display="flex"
+                direction="column"
+                gap="24px"
+              >
                 <Box
                   style={{
                     background: "var(--operon-color-surface)",
@@ -271,40 +330,22 @@ export const SettingsPage = () => {
                   </Box>
 
                   <Box display="flex" direction="column" gap="16px">
-                    <Box>
-                      <label
-                        style={{
-                          display: "block",
-                          fontSize: "12px",
-                          fontWeight: 600,
-                          color: "var(--operon-color-text-muted)",
-                          marginBottom: "6px",
-                        }}
-                      >
-                        Workspace Name
-                      </label>
+                    <Field label="Workspace name" htmlFor="workspace-name">
                       <Input
+                        id="workspace-name"
                         value={workspace?.name || "Workspace"}
                         disabled
                         style={{ width: "100%" }}
                       />
-                    </Box>
+                    </Field>
 
-                    <Box>
-                      <label
-                        style={{
-                          display: "block",
-                          fontSize: "12px",
-                          fontWeight: 600,
-                          color: "var(--operon-color-text-muted)",
-                          marginBottom: "6px",
-                        }}
-                      >
-                        Workspace ID
-                      </label>
+                    <Field label="Workspace ID" htmlFor="workspace-id">
                       <Box {...classes.workspaceIdRowStyle}>
                         <Input
-                          value={workspaceId || workspace?.id || "default-workspace"}
+                          id="workspace-id"
+                          value={
+                            workspaceId || workspace?.id || "default-workspace"
+                          }
                           disabled
                           style={{
                             fontFamily: "var(--operon-typography-mono)",
@@ -320,7 +361,7 @@ export const SettingsPage = () => {
                           {copiedId ? "Copied" : "Copy ID"}
                         </Button>
                       </Box>
-                    </Box>
+                    </Field>
                   </Box>
                 </Box>
               </Box>
@@ -349,43 +390,30 @@ export const SettingsPage = () => {
         }
       >
         <Box display="flex" direction="column" gap="16px">
-          <Box>
-            <label
-              style={{
-                display: "block",
-                fontSize: "13px",
-                fontWeight: 600,
-                color: "var(--operon-color-text)",
-                marginBottom: "6px",
-              }}
-            >
-              Colleague Email Address *
-            </label>
+          <Field
+            label="Colleague email address"
+            htmlFor="invite-email"
+            required
+          >
             <Input
+              id="invite-email"
               type="email"
               value={inviteEmail}
               onChange={(e) => setInviteEmail(e.target.value)}
               placeholder="colleague@company.com"
               autoFocus
             />
-          </Box>
+          </Field>
 
-          <Box>
-            <label
-              style={{
-                display: "block",
-                fontSize: "13px",
-                fontWeight: 600,
-                color: "var(--operon-color-text)",
-                marginBottom: "6px",
-              }}
-            >
-              Access Role
-            </label>
+          <Field label="Access role" id="invite-role-label">
             <Dropdown
               onSelect={(val) => setInviteRole(val)}
               trigger={
-                <Button variant="outline" style={{ width: "100%" }}>
+                <Button
+                  variant="outline"
+                  aria-labelledby="invite-role-label"
+                  style={{ width: "100%" }}
+                >
                   {inviteRole.toUpperCase()}
                 </Button>
               }
@@ -398,7 +426,7 @@ export const SettingsPage = () => {
                 },
               ]}
             />
-          </Box>
+          </Field>
         </Box>
       </Modal>
     </Box>

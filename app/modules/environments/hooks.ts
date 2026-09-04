@@ -1,68 +1,68 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
+import {
+  getActiveEnvironmentId,
+  getActiveScope,
+  setActiveEnvironment,
+} from "#/common/active-scope";
+import { queryKeys } from "#/common/api/query-keys";
 import { getEnvironmentsOptions } from "./api";
 
-const ACTIVE_ENVIRONMENT_KEY = "operon_active_environment_id";
-
-function getStoredEnvironmentId(): string | null {
-  if (typeof window === "undefined") return null;
-  return localStorage.getItem(ACTIVE_ENVIRONMENT_KEY);
-}
-
-function storeEnvironmentId(id: string) {
-  if (typeof window !== "undefined") {
-    localStorage.setItem(ACTIVE_ENVIRONMENT_KEY, id);
-  }
-}
+/** Routes addressing a single project, collection or key — see useActiveWorkspace. */
+const SCOPED_ROUTE_PREFIXES = ["/projects/", "/rule-engine/", "/api-keys/"];
 
 export function useActiveEnvironment() {
   const queryClient = useQueryClient();
   const router = useRouter();
-  const { data, isLoading } = useQuery(getEnvironmentsOptions);
-  const environments = data || [];
-  const [activeId, setActiveId] = useState<string | null>(getStoredEnvironmentId);
+  const { data: environments = [], isLoading } = useQuery(
+    getEnvironmentsOptions(),
+  );
+  const [activeId, setActiveId] = useState<string | null>(
+    getActiveEnvironmentId,
+  );
 
-  const handleRedirect = () => {
-    const pathname = router.state.location.pathname;
-    if (pathname.startsWith("/projects/")) router.navigate({ to: "/projects" });
-    else if (pathname.startsWith("/rule-engine/")) router.navigate({ to: "/rule-engine" });
-    else if (pathname.startsWith("/api-keys/")) router.navigate({ to: "/api-keys" });
-  };
+  const applyEnvironment = useCallback(
+    (id: string | null) => {
+      setActiveId(id);
+      setActiveEnvironment(id);
+      // Projects, collections, rules and keys all hang off the environment in
+      // the key tree, so invalidate that subtree rather than the whole cache.
+      const { workspaceId } = getActiveScope();
+      if (workspaceId) {
+        queryClient.invalidateQueries({
+          queryKey: queryKeys.environments(workspaceId),
+        });
+      }
+
+      const { pathname } = router.state.location;
+      const prefix = SCOPED_ROUTE_PREFIXES.find((p) => pathname.startsWith(p));
+      if (prefix) router.navigate({ to: prefix.slice(0, -1) });
+    },
+    [queryClient, router],
+  );
 
   useEffect(() => {
-    if (environments.length > 0) {
-      // If we have no active ID, or the active ID is not in the current list (e.g. workspace changed),
-      // fallback to the first environment in the list.
-      const isValid = environments.some((env) => env.id === activeId);
-      if (!isValid) {
-        const id = environments[0].id;
-        setActiveId(id);
-        storeEnvironmentId(id);
-        queryClient.invalidateQueries();
-        handleRedirect();
-      }
-    } else if (environments.length === 0 && !isLoading) {
-      // If no environments exist in the current workspace, clear the active environment.
-      if (activeId !== null) {
-        setActiveId(null);
-        if (typeof window !== "undefined") {
-          localStorage.removeItem(ACTIVE_ENVIRONMENT_KEY);
-        }
-        queryClient.invalidateQueries();
-        handleRedirect();
-      }
+    if (isLoading) return;
+
+    if (environments.length === 0) {
+      // A workspace with no environments must not keep pointing at one.
+      if (activeId !== null) applyEnvironment(null);
+      return;
     }
-  }, [environments, activeId, isLoading, queryClient, router]);
 
-  const activeEnvironment = environments.find((e) => e.id === activeId) ?? environments[0] ?? null;
+    if (!environments.some((env) => env.id === activeId)) {
+      applyEnvironment(environments[0].id);
+    }
+  }, [environments, activeId, isLoading, applyEnvironment]);
 
-  const switchEnvironment = (id: string) => {
-    setActiveId(id);
-    storeEnvironmentId(id);
-    queryClient.invalidateQueries();
-    handleRedirect();
+  const activeEnvironment =
+    environments.find((e) => e.id === activeId) ?? environments[0] ?? null;
+
+  return {
+    environments,
+    activeEnvironment,
+    switchEnvironment: applyEnvironment,
+    isLoading,
   };
-
-  return { environments, activeEnvironment, switchEnvironment, isLoading };
 }

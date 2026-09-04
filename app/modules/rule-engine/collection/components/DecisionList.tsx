@@ -25,7 +25,9 @@ export const DecisionList = ({
           background: isVisible
             ? "rgba(51, 214, 166, 0.12)"
             : "rgba(239, 68, 68, 0.12)",
-          color: isVisible ? "var(--operon-color-success)" : "var(--operon-color-danger)",
+          color: isVisible
+            ? "var(--operon-color-success)"
+            : "var(--operon-color-danger)",
           fontWeight: 700,
           fontSize: "11px",
           textTransform: "uppercase",

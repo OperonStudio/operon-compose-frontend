@@ -208,7 +208,11 @@ export function InvitationConfirmModal({
             display="flex"
             align="center"
             gap="10px"
-            style={{ color: "var(--operon-color-warning)", fontWeight: 700, fontSize: "14px" }}
+            style={{
+              color: "var(--operon-color-warning)",
+              fontWeight: 700,
+              fontSize: "14px",
+            }}
           >
             <AlertTriangle size={18} /> Wrong account
           </Box>

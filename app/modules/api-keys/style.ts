@@ -51,7 +51,8 @@ export const keyContainerStyle = css({
   cursor: "var(--operon-cursor-pointer, pointer)",
   "&:hover": {
     borderColor: "var(--operon-color-primary, #d33a5c)",
-    backgroundColor: "var(--operon-color-primary-ghost, rgba(211, 58, 92, 0.08))",
+    backgroundColor:
+      "var(--operon-color-primary-ghost, rgba(211, 58, 92, 0.08))",
   },
   "@media (max-width: 640px)": {
     flexDirection: "column",

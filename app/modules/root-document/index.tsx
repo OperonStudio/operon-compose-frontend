@@ -1,5 +1,5 @@
 import { AuthProvider, RequireAuth, useAuth } from "@operonstudio/auth";
-import { ThemeProvider, Toaster } from "@operonstudio/ui";
+import { ThemeProvider, Toaster, themeBootScript } from "@operonstudio/ui";
 import { TanStackDevtools } from "@tanstack/react-devtools";
 import { HeadContent, Scripts } from "@tanstack/react-router";
 import { TanStackRouterDevtoolsPanel } from "@tanstack/react-router-devtools";
@@ -121,10 +121,14 @@ export const RootDocument = ({ children }: { children: React.ReactNode }) => {
       <head>
         <meta charSet="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <script
+          // eslint-disable-next-line react/no-danger
+          dangerouslySetInnerHTML={{ __html: themeBootScript }}
+        />
         <HeadContent />
       </head>
       <body>
-        <ThemeProvider defaultDark={false}>
+        <ThemeProvider>
           <AuthProvider>
             <RequireAuth homepageUrl={HOMEPAGE_URL}>
               <AnalyticsSdk />

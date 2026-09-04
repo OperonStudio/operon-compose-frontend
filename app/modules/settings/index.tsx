@@ -287,7 +287,10 @@ export const SettingsPage = () => {
                             variant="ghost"
                             size="sm"
                             onClick={() => revokeInviteMutation.mutate(inv.id)}
-                            style={{ color: "var(--operon-color-danger)", gap: "6px" }}
+                            style={{
+                              color: "var(--operon-color-danger)",
+                              gap: "6px",
+                            }}
                           >
                             <Trash2 size={14} /> Revoke
                           </Button>

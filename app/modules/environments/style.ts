@@ -38,8 +38,7 @@ export const environmentNameStyle = css({
   fontSize: "18px",
   fontWeight: 700,
   color: "var(--operon-color-text)",
-  fontFamily:
-    "var(--operon-typography-heading)",
+  fontFamily: "var(--operon-typography-heading)",
   letterSpacing: "0.5px",
 });
 

@@ -54,7 +54,8 @@ export const listItemContainerStyle = css({
   transition: "all 0.2s ease",
   cursor: "var(--operon-cursor-pointer, pointer)",
   "&:hover": {
-    backgroundColor: "var(--operon-color-primary-ghost, rgba(211, 58, 92, 0.08))",
+    backgroundColor:
+      "var(--operon-color-primary-ghost, rgba(211, 58, 92, 0.08))",
   },
 });
 
@@ -65,12 +66,14 @@ export const listItemStyle = css({
   fontSize: "14px",
   fontWeight: "500",
   color: "var(--operon-color-text, #16151a)",
-  transition: "all 0.2s var(--operon-motion-easing, cubic-bezier(0.4, 0, 0.2, 1))",
+  transition:
+    "all 0.2s var(--operon-motion-easing, cubic-bezier(0.4, 0, 0.2, 1))",
   display: "flex",
   alignItems: "center",
   justifyContent: "space-between",
   "&:hover": {
-    backgroundColor: "var(--operon-color-primary-ghost, rgba(211, 58, 92, 0.08))",
+    backgroundColor:
+      "var(--operon-color-primary-ghost, rgba(211, 58, 92, 0.08))",
     color: "var(--operon-color-primary, #d33a5c)",
   },
 });

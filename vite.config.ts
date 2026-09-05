@@ -31,11 +31,35 @@ function backendOrigin(
   return fallback;
 }
 
+/**
+ * Where each service lives when no environment variable names it.
+ *
+ * A production build that falls back to localhost is simply wrong: the Nitro
+ * server proxies to that target from inside the Vercel function, where nothing
+ * is listening on 8081, so every platform call fails and the console answers
+ * its own front page with a 500. The `vercel.json` rewrites cover requests that
+ * arrive from a browser, but not the ones the server makes while rendering.
+ */
+const PRODUCTION_ORIGINS = {
+  platform: "https://operon-homepage-backend.onrender.com",
+  compose: "https://operon-compose-backend.onrender.com",
+  analytics: "https://operon-analytics-backend.onrender.com",
+  codeblocks: "https://operon-codeblocks-backend.onrender.com",
+};
+
+const LOCAL_ORIGINS = {
+  platform: "http://localhost:8081",
+  compose: "http://localhost:8080",
+  analytics: "http://localhost:8083",
+  codeblocks: "http://localhost:8084",
+};
+
 const config = defineConfig(({ mode }) => {
   // loadEnv, not process.env: Vite does not put .env files on process.env, so
   // reading it there meant the values in .env were silently ignored and the
   // localhost fallbacks were always what got used.
   const env = loadEnv(mode, process.cwd(), "");
+  const origins = mode === "production" ? PRODUCTION_ORIGINS : LOCAL_ORIGINS;
 
   // Auth and the shared platform — workspaces, environments, projects, members
   // and API keys — are both served by operon-homepage-backend. Compose used to
@@ -43,7 +67,7 @@ const config = defineConfig(({ mode }) => {
   // workspace is one record rather than whichever service got there first.
   const platformBackend = backendOrigin(
     env,
-    "http://localhost:8081",
+    origins.platform,
     "VITE_OPERON_PLATFORM_API_URL",
     "VITE_OPERON_AUTH_API_URL",
     "OPERON_HOMEPAGE_BACKEND_URL",
@@ -51,7 +75,7 @@ const config = defineConfig(({ mode }) => {
 
   const composeBackend = backendOrigin(
     env,
-    "http://localhost:8080",
+    origins.compose,
     "VITE_OPERON_COMPOSE_BACKEND_URL",
     "OPERON_COMPOSE_BACKEND_URL",
   );

@@ -22,7 +22,7 @@ const SCOPED_ROUTE_PREFIXES = ["/projects/", "/rule-engine/", "/api-keys/"];
 export function useActiveWorkspace() {
   const queryClient = useQueryClient();
   const router = useRouter();
-  const { data: workspaces = [] } = useQuery(getWorkspacesOptions);
+  const { data: workspaces = [] } = useQuery(getWorkspacesOptions());
   const [activeId, setActiveId] = useState<string | null>(getActiveWorkspaceId);
 
   const applyWorkspace = useCallback(

@@ -27,7 +27,7 @@ export const DashboardPage = () => {
 
   // Names, not ids. The path is here to tell you which workspace you are
   // looking at, and two 24-character hex strings do not.
-  const { data: workspaces = [] } = useQuery(getWorkspacesOptions);
+  const { data: workspaces = [] } = useQuery(getWorkspacesOptions());
   const { data: environments = [] } = useQuery(getEnvironmentsOptions());
   const workspaceName =
     workspaces.find((w) => w.id === workspaceId)?.name ?? "no workspace";

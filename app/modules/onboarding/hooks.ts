@@ -20,13 +20,15 @@ import type { Environment } from "#/modules/environments/types";
 
 // ── Query / mutation options ───────────────────────────────────────────────
 
-const workspacesQueryOptions = queryOptions({
-  queryKey: queryKeys.workspaces(),
-  queryFn: async () =>
-    await operonApiClient.get<Workspace[]>(
-      Endpoints.composeEndpoints.WORKSPACES(),
-    ),
-});
+/** Lazy for the reason set out in components/workspace-switcher/api.ts. */
+const workspacesQueryOptions = () =>
+  queryOptions({
+    queryKey: queryKeys.workspaces(),
+    queryFn: async () =>
+      await operonApiClient.get<Workspace[]>(
+        Endpoints.composeEndpoints.WORKSPACES(),
+      ),
+  });
 
 const environmentsQueryOptions = (workspaceId: string) =>
   queryOptions({
@@ -81,7 +83,7 @@ export function useOnboarding() {
     data: workspaces,
     isLoading: workspacesLoading,
     isError: workspacesErrored,
-  } = useQuery(workspacesQueryOptions);
+  } = useQuery(workspacesQueryOptions());
 
   const stored = getActiveScope();
 
